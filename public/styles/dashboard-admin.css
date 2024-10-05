@@ -1,0 +1,162 @@
+/* Общие стили для страницы администратора */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Левая панель с меню */
+.sidebar {
+    width: 250px;
+    background-color: #343a40;
+    color: white;
+    padding: 20px;
+}
+
+.sidebar .logo {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin: 20px 0;
+}
+
+.sidebar ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.sidebar ul li a:hover {
+    text-decoration: underline;
+}
+
+.logout {
+    position: absolute;
+    bottom: 20px;
+    width: 210px;
+    padding-left: 20px;
+}
+
+.logout a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.logout a:hover {
+    text-decoration: underline;
+}
+
+/* Правая панель с содержимым */
+.content {
+    flex: 1;
+    padding: 20px;
+}
+
+h1 {
+    margin-bottom: 20px;
+    color: #343a40;
+}
+
+.actions {
+    margin-bottom: 20px;
+}
+
+.actions button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    border: none;
+    color: white;
+    cursor: pointer;
+    margin-right: 10px;
+    border-radius: 5px;
+}
+
+.actions button:hover {
+    background-color: #0056b3;
+}
+
+.patients-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.patients-table th,
+.patients-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.patients-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.patients-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.patients-table tr:hover {
+    background-color: #ddd;
+}
+
+/* Модальные окна */
+#addPatientModal, #editPatientModal {
+    width: 400px;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#addPatientModal form, #editPatientModal form {
+    display: flex;
+    flex-direction: column;
+}
+
+#addPatientModal form label, #editPatientModal form label {
+    margin-bottom: 10px;
+}
+
+#addPatientModal form input, #editPatientModal form input, 
+#addPatientModal form select, #editPatientModal form select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#addPatientModal form button, #editPatientModal form button {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #28a745;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+#addPatientModal form button:hover, #editPatientModal form button:hover {
+    background-color: #218838;
+}
+
+/* Затемнение фона */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}

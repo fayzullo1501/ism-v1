@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация</title>
+    <link rel="stylesheet" href="/styles/login.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="left-side">
+            <div class="info">
+                <p style="color: white;">info@odiljonklinika.uz</p>
+                <p style="color: white;">developed by <b>FAYKHANUR LLC</b></p>
+            </div>
+        </div>
+        <div class="right-side">
+            <div class="form-container">
+                <h2>Вход в систему</h2>
+                <form action="/login" method="POST">
+                    <div class="input-group">
+                        <label for="login">Введите логин</label>
+                        <input type="text" id="login" name="login" placeholder="Логин" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Введите пароль</label>
+                        <input type="password" id="password" name="password" placeholder="Пароль" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="role">Выберите роль</label>
+                        <select id="role" name="role">
+                            <option value="Врач">Врач</option>
+                            <option value="Администратор">Администратор</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="submit-btn">Продолжить</button>
+                </form>
+                <p>При возникновении системного сбоя обратитесь <br>в группу сопровождения по номеру +998 99 996-16-96</p>
+            </div>
+        </div>
+    </div>
+    
+</body>
+</html>
