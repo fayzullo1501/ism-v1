@@ -5,83 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Администратор - Пациенты</title>
     <link rel="stylesheet" href="../styles/dashboard-admin.css">
-    <style>
-        /* Модальные окна и затемнение фона */
-        #addPatientModal, #editPatientModal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 20px;
-            border: 1px solid #ccc;
-            display: none;
-            z-index: 10;
-        }
-
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            z-index: 5;
-        }
-
-        .overlay.show, #addPatientModal.show, #editPatientModal.show {
-            display: block;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <div class="container">
         <!-- Левая панель с меню -->
         <div class="sidebar">
             <div class="logo">
-                <h2>Клиника</h2>
+                <img src="/images/logo.png" alt="Клиника" class="logo-img">
             </div>
             <ul class="menu">
-                <li><a href="#">Пациенты</a></li>
-                <li><a href="#">Услуги</a></li>
-                <li><a href="#">Врачи</a></li>
-                <li><a href="#">Палаты</a></li>
+                <li><a href="dashboard-admin.html"><i class="fas fa-home"></i> Главная</a></li>
+                <li><a href="patients.html"><i class="fas fa-user-injured"></i> Пациенты</a></li>
+                <li><a href="services.html"><i class="fas fa-briefcase-medical"></i> Услуги</a></li>
+                <li><a href="doctors.html"><i class="fas fa-user-md"></i> Врачи</a></li>
+                <li><a href="wards.html"><i class="fas fa-hospital"></i> Палаты</a></li>
             </ul>
             <div class="logout">
-                <a href="/logout">Выйти</a>
+                <a href="/logout"><i class="fas fa-sign-out-alt"></i> Выход</a>
             </div>
         </div>
 
         <!-- Правая панель с таблицей пациентов -->
-        <div class="content">
-            <h1>Пациенты</h1>
-            <div class="actions">
-                <button id="addPatientBtn">Добавить</button>
-                <button id="deletePatientBtn" disabled>Удалить</button>
-                <button id="editPatientBtn" disabled>Изменить</button>
+        <div class="main-content">
+            <div class="module-header">
+                <h1>Администратор</h1>
             </div>
-
-            <table class="patients-table">
-                <thead>
-                    <tr>
-                        <th><input type="checkbox" id="selectAll"></th>
-                        <th>№</th>
-                        <th>ФИО</th>
-                        <th>Дата рождения</th>
-                        <th>Паспорт</th>
-                        <th>Телефон</th>
-                        <th>Адрес</th>
-                        <th>Услуга</th>
-                        <th>Палата</th>
-                        <th>Вывод врача</th>
-                        <th>Инфо</th>
-                    </tr>
-                </thead>
-                <tbody id="patientsTableBody">
-                    <!-- Здесь будут отображаться пациенты -->
-                </tbody>
-            </table>
+            <div class="module-content">
+                <p>Добро пожаловать Администратор</p>
+            </div>
         </div>
     </div>
 

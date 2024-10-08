@@ -3,17 +3,14 @@ const Patient = require('../models/patientModel');
 // Контроллер для добавления пациента
 exports.addPatient = async (req, res) => {
     try {
-        const { fullName, birthDate, passport, phone, address, service, ward, doctorSummary } = req.body;
+        const { fullName, birthDate, passport, phone, address } = req.body; // Убрали поля service, ward, doctorSummary
         
         const newPatient = new Patient({
             fullName,
             birthDate,
             passport,
             phone,
-            address,
-            service,
-            ward: ward || null, // Если палата не указана
-            doctorSummary: doctorSummary || ''
+            address
         });
 
         await newPatient.save();
@@ -26,7 +23,7 @@ exports.addPatient = async (req, res) => {
 // Контроллер для получения всех пациентов
 exports.getPatients = async (req, res) => {
     try {
-        const patients = await Patient.find().populate('ward'); // Получаем палату через populate
+        const patients = await Patient.find(); // Убрали populate для ward, т.к. теперь ward не является частью пациента напрямую
         res.status(200).json(patients);
     } catch (error) {
         res.status(500).json({ message: 'Ошибка при получении списка пациентов', error });
@@ -36,7 +33,7 @@ exports.getPatients = async (req, res) => {
 // Контроллер для получения пациента по ID
 exports.getPatientById = async (req, res) => {
     try {
-        const patient = await Patient.findById(req.params.id).populate('ward');
+        const patient = await Patient.findById(req.params.id);
         res.status(200).json(patient);
     } catch (error) {
         res.status(500).json({ message: 'Ошибка при получении пациента', error });
@@ -46,16 +43,14 @@ exports.getPatientById = async (req, res) => {
 // Контроллер для изменения пациента
 exports.updatePatient = async (req, res) => {
     try {
-        const { fullName, birthDate, passport, phone, address, service, ward, doctorSummary } = req.body;
+        const { fullName, birthDate, passport, phone, address } = req.body; // Убрали поля service, ward, doctorSummary
+        
         const updatedPatient = await Patient.findByIdAndUpdate(req.params.id, {
             fullName,
             birthDate,
             passport,
             phone,
-            address,
-            service,
-            ward: ward || null,
-            doctorSummary: doctorSummary || ''
+            address
         }, { new: true }); // new: true для возврата обновленного объекта
 
         res.status(200).json({ message: 'Пациент успешно изменен', patient: updatedPatient });
