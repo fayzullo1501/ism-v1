@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Администратор - Услуги</title>
+    <link rel="stylesheet" href="../styles/dashboard-admin.css">
+    <link rel="stylesheet" href="../styles/services.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Левая панель с меню -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="/images/logo.png" alt="Клиника" class="logo-img">
+            </div>
+            <ul class="menu">
+                <li><a href="dashboard-admin.html"><i class="fas fa-home"></i> Главная</a></li>
+                <li><a href="patients.html"><i class="fas fa-user-injured"></i> Пациенты</a></li>
+                <li><a href="services.html" class="active"><i class="fas fa-briefcase-medical"></i> Услуги</a></li>
+                <li><a href="doctors.html"><i class="fas fa-user-md"></i> Врачи</a></li>
+                <li><a href="wards.html"><i class="fas fa-hospital"></i> Палаты</a></li>
+            </ul>
+            <div class="logout">
+                <a href="login.html"><i class="fas fa-sign-out-alt"></i> Выход</a>
+            </div>
+        </div>
+    
+        <!-- Правая панель (контент) -->
+        <div class="main-content">
+            <div class="module-header">
+                <h1>Усулги</h1>
+            </div>
+            <div class="module-content">
+                <!-- Кнопки действий и поиск -->
+                <div class="actions">
+                    <div class="action-buttons">
+                        <button id="addServiceBtn">Добавить</button>
+                        <button id="deleteServiceBtn" disabled>Удалить</button>
+                        <button id="editServiceBtn" disabled>Изменить</button>
+                    </div>
+                    <input type="text" id="searchInput" placeholder="Поиск" class="search-input">
+                </div>
+    
+                <!-- Прокручиваемая таблица услуг -->
+                <div class="table-wrapper">
+                    <table class="services-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
+                                <th>№</th>
+                                <th>Наименование услуги</th>
+                                <th>Тип услуги</th>
+                                <th>Описание услуги</th>
+                                <th>Цена</th>
+                                <th>Дата добавления</th>
+                            </tr>
+                        </thead>
+                        <tbody id="servicesTableBody">
+                            <!-- Здесь будут отображаться пациенты -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="pagination" class="pagination-container"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно для добавления услуги -->
+    <div class="overlay" id="overlay"></div>
+    <div id="addServiceModal" class="modal">
+        <h2>Добавить новую услугу</h2>
+        <form id="addServiceForm">
+            <div class="form-row">
+                <label for="serviceName">Наименование услуги:</label>
+                <input type="text" name="serviceName" id="serviceName" placeholder="Наименование услуги" required>
+            </div>
+            <div class="form-row">
+                <label for="serviceType">Тип услуги:</label>
+                <input type="text" name="serviceType" id="serviceType" placeholder="Тип услуги" required>
+            </div>
+            <div class="form-row">
+                <label for="serviceAbout">Описание услуги:</label>
+                <input type="text" name="serviceAbout" id="serviceAbout" placeholder="Описание услуги" required>
+            </div>
+            <div class="form-row">
+                <label for="servicePrice">Цена:</label>
+                <input type="number" name="servicePrice" id="servicePrice" placeholder="UZS" required>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn-save">Сохранить</button>
+                <button type="button" class="btn-cancel">Отменить</button>
+            </div>
+        </form>
+    </div>
+
+    
+    <!-- Модальное окно для изменения услуги -->
+    <div id="editServiceModal" class="modal">
+        <h2>Изменить данные услуги</h2>
+        <form id="editServiceForm">
+            <input type="hidden" name="serviceId">
+            <div class="form-row">
+                <label for="editserviceName">Наименование услуги:</label>
+                <input type="text" name="serviceName" id="editserviceName" placeholder="Наименование услуги" required>
+            </div>
+            <div class="form-row">
+                <label for="editserviceType">Тип услуги:</label>
+                <input type="text" name="serviceType" id="editserviceType" placeholder="Тип услуги" required>
+            </div>
+            <div class="form-row">
+                <label for="editserviceAbout">Описание услуги:</label>
+                <input type="text" name="serviceAbout" id="editserviceAbout" placeholder="Описание услуги" required>
+            </div>
+            <div class="form-row">
+                <label for="editservicePrice">Цена услуги:</label>
+                <input type="number" name="servicePrice" id="editservicePrice" placeholder="Цена услуги" required>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn-save">Сохранить</button>
+                <button type="button" class="btn-cancel">Отменить</button>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+    let selectedServiceId = null;
+
+    // Открытие модальных окон для добавления пациента
+    document.getElementById('addServiceBtn').addEventListener('click', function() {
+        document.getElementById('addServiceModal').classList.add('show');
+        document.getElementById('overlay').classList.add('show');
+    });
+
+    // Открытие модальных окон для редактирования пациента
+    document.getElementById('editServiceBtn').addEventListener('click', function() {
+        if (!selectedServiceId) return;
+        fetch(`/services/${selectedServiceId}`)
+            .then(response => response.json())
+            .then(service => {
+                document.querySelector('#editServiceForm [name="serviceId"]').value = service._id;
+                document.querySelector('#editServiceForm [name="serviceName"]').value = service.serviceName;
+                document.querySelector('#editServiceForm [name="serviceType"]').value = service.serviceType;
+                document.querySelector('#editServiceForm [name="serviceAbout"]').value = service.serviceAbout;
+                document.querySelector('#editServiceForm [name="servicePrice"]').value = service.servicePrice;
+                document.getElementById('editServiceModal').classList.add('show');
+                document.getElementById('overlay').classList.add('show');
+            });
+    });
+
+    // Закрытие модальных окон при нажатии на overlay
+    document.getElementById('overlay').addEventListener('click', function() {
+        document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('show'));
+        document.getElementById('overlay').classList.remove('show');
+    });
+
+    // Закрытие модальных окон при нажатии кнопки "Отмена" или завершении действия
+    document.querySelectorAll('.btn-cancel').forEach(button => {
+        button.addEventListener('click', function() {
+            document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('show'));
+            document.getElementById('overlay').classList.remove('show');
+        });
+    });
+
+    // Обработка добавления услуги
+    document.getElementById('addServiceForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        fetch('/services/add', {
+            method: 'POST',
+            body: new URLSearchParams(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Услуга успешно добавлен!');
+            document.getElementById('addServiceModal').classList.remove('show');
+            document.getElementById('overlay').classList.remove('show');
+            loadservices(); // Перезагрузка списка услуг после добавления
+        })
+        .catch(error => {
+            alert('Ошибка при добавлении услуги');
+            console.error(error);
+        });
+    });
+
+    // Обработчик события для поиска
+    document.getElementById('searchInput').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        loadservices(query); // Передаем запрос в функцию загрузки услуг
+    });
+
+    // Обработка изменения услуги
+    document.getElementById('editServiceForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        fetch(`/services/edit/${formData.get('serviceId')}`, {
+            method: 'PUT',
+            body: new URLSearchParams(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Услуга успешно изменена!');
+            document.getElementById('editServiceModal').classList.remove('show');
+            document.getElementById('overlay').classList.remove('show');
+            loadservices();
+        })
+        .catch(error => {
+            alert('Ошибка при изменении услуги');
+            console.error(error);
+        });
+    });
+
+    // Удаление услуги
+    document.getElementById('deleteServiceBtn').addEventListener('click', function() {
+        if (!selectedServiceId) return;
+        if (confirm('Вы действительно хотите удалить услугу?')) {
+            fetch(`/services/delete/${selectedServiceId}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Услуга удалена!');
+                    loadservices();
+                })
+                .catch(error => {
+                    alert('Ошибка при удалении услуги');
+                    console.error(error);
+                });
+        }
+    });
+
+    // Функция для форматирования даты в нужный формат
+    function formatDate(date) {
+        const d = new Date(date);
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        const seconds = String(d.getSeconds()).padStart(2, '0');
+        return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+    }
+
+    // Глобальные переменные для текущей страницы и количества записей на странице
+    let currentPage = 1;
+    const recordsPerPage = 15;
+
+    // Загрузка списка услуг с учетом пагинации
+    function loadservices(searchQuery = '', page = 1) {
+        fetch('/services/list')
+            .then(response => response.json())
+            .then(data => {
+                const servicesTableBody = document.getElementById('servicesTableBody');
+                servicesTableBody.innerHTML = '';
+
+                // Фильтрация данных на клиенте по запросу
+                const filteredservices = data.filter(service => {
+                    return (
+                        service.serviceName.toLowerCase().includes(searchQuery) ||
+                        service.serviceAbout.toLowerCase().includes(searchQuery) ||
+                        service.servicePrice.toLowerCase().includes(searchQuery) ||
+                        service.serviceType.toLowerCase().includes(searchQuery)
+                    );
+                });
+
+                // Определяем начало и конец текущей страницы
+                const startIndex = (page - 1) * recordsPerPage;
+                const endIndex = startIndex + recordsPerPage;
+                const servicesToShow = filteredservices.slice(startIndex, endIndex);
+
+                // Отображаем услуг на текущей странице
+                servicesToShow.forEach((service, index) => {
+                    const registrationDate = service.createdAt ? formatDate(service.createdAt) : 'Не указано';
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><input type="checkbox" data-service-id="${service._id}"></td>
+                        <td>${startIndex + index + 1}</td>
+                        <td>${service.serviceName}</td>
+                        <td>${service.serviceType}</td>
+                        <td>${service.serviceAbout}</td>
+                        <td>${service.servicePrice} Сум</td>
+                        <td>${registrationDate}</td>
+                    `;
+                    servicesTableBody.appendChild(row);
+                });
+
+                // Обновляем кнопки пагинации
+                updatePaginationButtons(filteredservices.length, page);
+            });
+    }
+
+    // Функция для обновления кнопок пагинации
+    function updatePaginationButtons(totalRecords, currentPage) {
+        const paginationContainer = document.getElementById('pagination');
+        paginationContainer.innerHTML = '';
+
+        const totalPages = Math.ceil(totalRecords / recordsPerPage);
+
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            pageButton.classList.add('page-btn');
+            if (i === currentPage) {
+                pageButton.classList.add('active');
+            }
+
+            pageButton.addEventListener('click', () => {
+                loadservices(document.getElementById('searchInput').value.toLowerCase(), i);
+            });
+
+            paginationContainer.appendChild(pageButton);
+        }
+    }
+
+    // Инициализация загрузки услуг при загрузке страницы
+    loadservices();
+
+    // Обработчик события для поиска
+    document.getElementById('searchInput').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        currentPage = 1; // Сбрасываем текущую страницу при поиске
+        loadservices(query, currentPage);
+    });
+
+
+    // Загрузка списка услуг при открытии страницы
+    loadservices();
+
+    // Обработка выбора услуг через чекбоксы
+    document.getElementById('servicesTableBody').addEventListener('click', function(e) {
+        if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
+            selectedServiceId = e.target.dataset.serviceId;
+            document.getElementById('editServiceBtn').disabled = !selectedServiceId;
+            document.getElementById('deleteServiceBtn').disabled = !selectedServiceId;
+        }
+    });
+    </script>   
+
+</body>
+</html>

@@ -17,4 +17,5 @@ router.put('/edit/:id', patientController.updatePatient);
 // Маршрут для удаления пациента
 router.delete('/delete/:id', patientController.deletePatient);
 
+
 module.exports = router;

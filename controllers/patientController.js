@@ -3,7 +3,7 @@ const Patient = require('../models/patientModel');
 // Контроллер для добавления пациента
 exports.addPatient = async (req, res) => {
     try {
-        const { fullName, birthDate, passport, phone, address } = req.body; // Убрали поля service, ward, doctorSummary
+        const { fullName, birthDate, passport, phone, address } = req.body;
         
         const newPatient = new Patient({
             fullName,
@@ -11,6 +11,7 @@ exports.addPatient = async (req, res) => {
             passport,
             phone,
             address
+            // Поле createdAt автоматически добавится благодаря настройке в модели
         });
 
         await newPatient.save();
@@ -20,10 +21,12 @@ exports.addPatient = async (req, res) => {
     }
 };
 
+
 // Контроллер для получения всех пациентов
 exports.getPatients = async (req, res) => {
     try {
-        const patients = await Patient.find(); // Убрали populate для ward, т.к. теперь ward не является частью пациента напрямую
+        // Сортируем по полю createdAt в порядке убывания
+        const patients = await Patient.find().sort({ createdAt: -1 });
         res.status(200).json(patients);
     } catch (error) {
         res.status(500).json({ message: 'Ошибка при получении списка пациентов', error });

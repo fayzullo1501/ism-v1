@@ -17,13 +17,13 @@
             </div>
             <ul class="menu">
                 <li><a href="dashboard-admin.html"><i class="fas fa-home"></i> Главная</a></li>
-                <li><a href="patients.html"><i class="fas fa-user-injured"></i> Пациенты</a></li>
+                <li><a href="patients.html" class="active"><i class="fas fa-user-injured"></i> Пациенты</a></li>
                 <li><a href="services.html"><i class="fas fa-briefcase-medical"></i> Услуги</a></li>
                 <li><a href="doctors.html"><i class="fas fa-user-md"></i> Врачи</a></li>
                 <li><a href="wards.html"><i class="fas fa-hospital"></i> Палаты</a></li>
             </ul>
             <div class="logout">
-                <a href="/logout"><i class="fas fa-sign-out-alt"></i> Выход</a>
+                <a href="login.html"><i class="fas fa-sign-out-alt"></i> Выход</a>
             </div>
         </div>
     
@@ -43,26 +43,30 @@
                     <input type="text" id="searchInput" placeholder="Поиск" class="search-input">
                 </div>
     
-                <!-- Таблица с пациентами -->
-                <table class="patients-table">
-                    <thead>
-                        <tr>
-                            <th><input type="checkbox" id="selectAll"></th>
-                            <th>№</th>
-                            <th>ФИО</th>
-                            <th>Дата рождения</th>
-                            <th>Паспорт</th>
-                            <th>Телефон</th>
-                            <th>Адрес</th>
-                            <th>Услуга</th>
-                            <th>Палата</th>
-                            <th>Инфо</th>
-                        </tr>
-                    </thead>
-                    <tbody id="patientsTableBody">
-                        <!-- Здесь будут отображаться пациенты -->
-                    </tbody>
-                </table>
+                <!-- Прокручиваемая таблица пациентов -->
+                <div class="table-wrapper">
+                    <table class="patients-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
+                                <th>№</th>
+                                <th>ФИО</th>
+                                <th>Дата рождения</th>
+                                <th>Паспорт</th>
+                                <th>Телефон</th>
+                                <th>Адрес</th>
+                                <th>Дата регистрации</th>
+                                <th>Услуга</th>
+                                <th>Палата</th>
+                                <th>Инфо</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patientsTableBody">
+                            <!-- Здесь будут отображаться пациенты -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="pagination" class="pagination-container"></div>
             </div>
         </div>
     </div>
@@ -72,28 +76,66 @@
     <div id="addPatientModal" class="modal">
         <h2>Добавить нового пациента</h2>
         <form id="addPatientForm">
-            <label>ФИО: <input type="text" name="fullName" required></label>
-            <label>Дата рождения: <input type="date" name="birthDate" required></label>
-            <label>Паспорт: <input type="text" name="passport" required></label>
-            <label>Телефон: <input type="tel" name="phone" required></label>
-            <label>Адрес: <input type="text" name="address" required></label>
-            <button type="submit" class="btn-save">Добавить</button>
+            <div class="form-row">
+                <label for="fullName">ФИО пациента:</label>
+                <input type="text" name="fullName" id="fullName" placeholder="ФИО" required>
+            </div>
+            <div class="form-row">
+                <label for="birthDate">Дата рождения:</label>
+                <input type="date" name="birthDate" id="birthDate" placeholder="дд.мм.гггг" required>
+            </div>
+            <div class="form-row">
+                <label for="passport">Паспортные данные:</label>
+                <input type="text" name="passport" id="passport" placeholder="AB0000000" required>
+            </div>
+            <div class="form-row">
+                <label for="phone">Телефон:</label>
+                <input type="tel" name="phone" id="phone" placeholder="+998901234567" required>
+            </div>
+            <div class="form-row">
+                <label for="address">Адрес:</label>
+                <input type="text" name="address" id="address" placeholder="Адрес" required>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn-save">Сохранить</button>
+                <button type="button" class="btn-cancel">Отменить</button>
+            </div>
         </form>
     </div>
+
     
     <!-- Модальное окно для изменения пациента -->
     <div id="editPatientModal" class="modal">
         <h2>Изменить данные пациента</h2>
         <form id="editPatientForm">
             <input type="hidden" name="patientId">
-            <label>ФИО: <input type="text" name="fullName" required></label>
-            <label>Дата рождения: <input type="date" name="birthDate" required></label>
-            <label>Паспорт: <input type="text" name="passport" required></label>
-            <label>Телефон: <input type="tel" name="phone" required></label>
-            <label>Адрес: <input type="text" name="address" required></label>
-            <button type="submit" class="btn-save">Изменить</button>
+            <div class="form-row">
+                <label for="editFullName">ФИО пациента:</label>
+                <input type="text" name="fullName" id="editFullName" placeholder="ФИО" required>
+            </div>
+            <div class="form-row">
+                <label for="editBirthDate">Дата рождения:</label>
+                <input type="date" name="birthDate" id="editBirthDate" placeholder="дд.мм.гггг" required>
+            </div>
+            <div class="form-row">
+                <label for="editPassport">Паспортные данные:</label>
+                <input type="text" name="passport" id="editPassport" placeholder="AB0000000" required>
+            </div>
+            <div class="form-row">
+                <label for="editPhone">Телефон:</label>
+                <input type="tel" name="phone" id="editPhone" placeholder="+998901234567" required>
+            </div>
+            <div class="form-row">
+                <label for="editAddress">Адрес:</label>
+                <input type="text" name="address" id="editAddress" placeholder="Адрес" required>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn-save">Сохранить</button>
+                <button type="button" class="btn-cancel">Отменить</button>
+            </div>
         </form>
     </div>
+
 
     <!-- Пустое модальное окно для услуги, палаты и информации -->
     <div id="serviceModal" class="modal">
@@ -167,12 +209,18 @@
             alert('Пациент успешно добавлен!');
             document.getElementById('addPatientModal').classList.remove('show');
             document.getElementById('overlay').classList.remove('show');
-            loadPatients();
+            loadPatients(); // Перезагрузка списка пациентов после добавления
         })
         .catch(error => {
             alert('Ошибка при добавлении пациента');
             console.error(error);
         });
+    });
+
+    // Обработчик события для поиска
+    document.getElementById('searchInput').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        loadPatients(query); // Передаем запрос в функцию загрузки пациентов
     });
 
     // Обработка изменения пациента
@@ -213,40 +261,78 @@
         }
     });
 
-    // Загрузка списка пациентов
-    function loadPatients() {
+    // Функция для форматирования даты в нужный формат
+    function formatDate(date) {
+        const d = new Date(date);
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        const seconds = String(d.getSeconds()).padStart(2, '0');
+        return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+    }
+
+    // Глобальные переменные для текущей страницы и количества записей на странице
+    let currentPage = 1;
+    const recordsPerPage = 15;
+
+    // Загрузка списка пациентов с учетом пагинации
+    function loadPatients(searchQuery = '', page = 1) {
         fetch('/patients/list')
             .then(response => response.json())
             .then(data => {
                 const patientsTableBody = document.getElementById('patientsTableBody');
                 patientsTableBody.innerHTML = '';
 
-                data.forEach((patient, index) => {
+                // Фильтрация данных на клиенте по запросу
+                const filteredPatients = data.filter(patient => {
+                    return (
+                        patient.fullName.toLowerCase().includes(searchQuery) ||
+                        patient.passport.toLowerCase().includes(searchQuery) ||
+                        patient.phone.toLowerCase().includes(searchQuery) ||
+                        patient.address.toLowerCase().includes(searchQuery)
+                    );
+                });
+
+                // Определяем начало и конец текущей страницы
+                const startIndex = (page - 1) * recordsPerPage;
+                const endIndex = startIndex + recordsPerPage;
+                const patientsToShow = filteredPatients.slice(startIndex, endIndex);
+
+                // Отображаем пациентов на текущей странице
+                patientsToShow.forEach((patient, index) => {
+                    const registrationDate = patient.createdAt ? formatDate(patient.createdAt) : 'Не указано';
+
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td><input type="checkbox" data-patient-id="${patient._id}"></td>
-                        <td>${index + 1}</td>
+                        <td>${startIndex + index + 1}</td>
                         <td>${patient.fullName}</td>
                         <td>${new Date(patient.birthDate).toLocaleDateString()}</td>
                         <td>${patient.passport}</td>
                         <td>${patient.phone}</td>
                         <td>${patient.address}</td>
-                        <td><button class="serviceBtn">Выбрать</button></td>
-                        <td><button class="wardBtn">Выбрать</button></td>
-                        <td><button class="infoBtn">Выбрать</button></td>
+                        <td>${registrationDate}</td>
+                        <td><span class="serviceText">Выбрать</span></td>
+                        <td><span class="wardText">Выбрать</span></td>
+                        <td><button class="infoBtn">Подробнее</button></td>
                     `;
                     patientsTableBody.appendChild(row);
                 });
 
-                // Привязка событий кнопок "Выбрать"
-                document.querySelectorAll('.serviceBtn').forEach(button => {
+                // Обновляем кнопки пагинации
+                updatePaginationButtons(filteredPatients.length, page);
+
+                // Добавляем обработчики событий для кнопок после добавления строк в таблицу
+                document.querySelectorAll('.serviceText').forEach(button => {
                     button.addEventListener('click', function() {
                         document.getElementById('serviceModal').classList.add('show');
                         document.getElementById('overlay').classList.add('show');
                     });
                 });
 
-                document.querySelectorAll('.wardBtn').forEach(button => {
+                document.querySelectorAll('.wardText').forEach(button => {
                     button.addEventListener('click', function() {
                         document.getElementById('wardModal').classList.add('show');
                         document.getElementById('overlay').classList.add('show');
@@ -261,6 +347,40 @@
                 });
             });
     }
+
+    // Функция для обновления кнопок пагинации
+    function updatePaginationButtons(totalRecords, currentPage) {
+        const paginationContainer = document.getElementById('pagination');
+        paginationContainer.innerHTML = '';
+
+        const totalPages = Math.ceil(totalRecords / recordsPerPage);
+
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            pageButton.classList.add('page-btn');
+            if (i === currentPage) {
+                pageButton.classList.add('active');
+            }
+
+            pageButton.addEventListener('click', () => {
+                loadPatients(document.getElementById('searchInput').value.toLowerCase(), i);
+            });
+
+            paginationContainer.appendChild(pageButton);
+        }
+    }
+
+    // Инициализация загрузки пациентов при загрузке страницы
+    loadPatients();
+
+    // Обработчик события для поиска
+    document.getElementById('searchInput').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        currentPage = 1; // Сбрасываем текущую страницу при поиске
+        loadPatients(query, currentPage);
+    });
+
 
     // Загрузка списка пациентов при открытии страницы
     loadPatients();

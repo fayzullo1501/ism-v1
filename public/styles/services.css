@@ -1,0 +1,295 @@
+/* Основные стили для правого блока */
+.main-content {
+    padding: 0;
+    background-color: #f1f1f1;
+    flex-grow: 1;
+}
+
+/* Стили для кнопок действий */
+.actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px; /* Отступ между кнопками */
+}
+
+.action-buttons button {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: 100;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+#addServiceBtn {
+    background-color: #e94949;
+    color: white;
+}
+
+#addServiceBtn:hover {
+    background-color: #cb1f1f;
+    transform: scale(1.05);
+}
+
+#editServiceBtn {
+    background-color: #E6E9F0;
+    color: black;
+}
+
+#editServiceBtn:hover {
+    background-color: none;
+    transform: scale(1.05);
+}
+
+#deleteServiceBtn {
+    background-color: #E6E9F0;
+    color: black;
+}
+
+#deleteServiceBtn:hover {
+    background-color: none;
+    transform: scale(1.05);
+}
+
+.action-buttons button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Стили для формы поиска */
+.search-input {
+    padding: 10px 20px;
+    width: 100%;
+    max-width: 300px;
+    font-size: 16px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: #757575;
+    box-shadow: 0px 0px 8px #757575;
+    outline: none;
+}
+
+/* Стили для таблицы услуг */
+.services-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #ffffff;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.services-table th, .services-table td {
+    padding: 15px;
+    text-align: left;
+    border: 1px solid #dcdcdc;
+    vertical-align: middle;
+}
+
+.services-table th {
+    background-color: #E6E9F0;
+    font-weight: 100;
+    color: #757575;
+    border-bottom: 2px solid #dcdcdc;
+}
+
+.services-table tr:hover td {
+    background-color: #f1f1f1;
+}
+
+.services-table th:first-child, 
+.services-table td:first-child {
+    text-align: center;
+    width: 40px;
+}
+
+.services-table td:last-child {
+    text-align: left;
+    font-weight: 100;
+}
+
+/* Прокручиваемая область для таблицы */
+.table-wrapper {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-bottom: 10px;
+}
+
+/* Пагинация */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 5px;
+}
+
+.page-btn {
+    padding: 10px 15px;
+    border: none;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.page-btn:hover {
+    background-color: #ddd;
+}
+
+.page-btn.active {
+    background-color: #e94949;
+    color: white;
+}
+
+/* Основные стили модальных окон */
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    width: 500px;
+    max-width: 90%;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.modal.show {
+    display: block;
+    opacity: 1;
+}
+
+/* Заголовок модального окна */
+.modal h2 {
+    font-size: 24px;
+    color: #333;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+/* Стили для строки формы */
+.form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+/* Стили для полей ввода и лейблов */
+.form-row label {
+    flex: 0 0 150px; /* Ширина лейбла */
+    font-weight: bold;
+    font-size: 16px;
+    color: #333;
+}
+
+.form-row input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #333;
+}
+
+.modal label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #333;
+    font-weight: bold;
+}
+
+.modal input {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #333;
+    transition: border-color 0.3s ease;
+}
+
+.modal input::placeholder {
+    color: #999;
+}
+
+.modal input:focus {
+    border-color: #757575;
+    outline: none;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.modal .btn-save {
+    background-color: #e94949;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 400;
+    transition: background-color 0.3s ease;
+    flex: 1;
+    margin-right: 10px;
+}
+
+.modal .btn-save:hover {
+    background-color: #cb1f1f;
+}
+
+.modal .btn-cancel {
+    background-color: #E6E9F0;
+    color: #000;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    flex: 1;
+}
+
+.modal .btn-cancel:hover {
+    background-color: #bbb;
+}
+
+/* Затеняющий слой */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 900;
+}
+
+.overlay.show {
+    display: block;
+}

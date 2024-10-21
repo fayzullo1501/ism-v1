@@ -8,19 +8,25 @@ body {
 
 .container {
     display: flex;
-    height: 100vh;
+    width: 100%;
+    height: 100vh; /* Высота экрана */
+    overflow: hidden; /* Убираем прокрутку всего окна */
 }
 
 /* Левая панель с меню */
 .sidebar {
-    width: 250px;
-    background-color: #2f3542;
+    position: fixed; /* Фиксированное положение */
+    top: 0;
+    left: 0;
+    width: 250px; /* Ширина левой панели */
+    height: 100%; /* Высота на весь экран */
+    background-color: #2c3138; /* Цвет фона */
     color: white;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 10px 0;
-    position: relative;
+    padding: 20px 0;
+    z-index: 1000; /* Слой поверх других элементов */
 }
 
 .logo {
@@ -106,10 +112,14 @@ ul.menu li a.active {
 
 /* Правая панель */
 .main-content {
-    flex-grow: 1;
-    background-color: #e0e0e0; /* Более темный фон для основного контента */
+    margin-left: 250px; /* Отступ от левой фиксированной панели */
     padding: 0;
+    width: calc(100% - 250px); /* Вычисляемая ширина, которая учитывает фиксированную левую панель */
+    background-color: #f1f1f1; /* Цвет фона для основного контента */
+    min-height: 100vh; /* Чтобы занимать всю высоту экрана */
+    box-sizing: border-box; /* Учитываем padding в ширину */
 }
+
 
 /* Заголовок модуля */
 .module-header {

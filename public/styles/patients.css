@@ -22,32 +22,35 @@
 }
 
 #addPatientBtn {
-    background-color: #28a745;
+    background-color: #e94949;
+    font-weight: 100;
     color: white;
 }
 
 #addPatientBtn:hover {
-    background-color: #218838;
+    background-color: #cb1f1f;
     transform: scale(1.05);
 }
 
 #editPatientBtn {
-    background-color: #ffc107;
-    color: white;
+    background-color: #E6E9F0;
+    font-weight: 100;
+    color: #000;
 }
 
 #editPatientBtn:hover {
-    background-color: #e0a800;
+    background-color: none;
     transform: scale(1.05);
 }
 
 #deletePatientBtn {
-    background-color: #dc3545;
-    color: white;
+    background-color: #E6E9F0;
+    font-weight: 100;
+    color: #000;
 }
 
 #deletePatientBtn:hover {
-    background-color: #c82333;
+    background-color: none;
     transform: scale(1.05);
 }
 
@@ -63,20 +66,19 @@
     max-width: 300px;
     font-size: 16px;
     border: 2px solid #ddd;
-    border-radius: 25px;
+    border-radius: 10px;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .search-input:focus {
-    border-color: #28a745;
-    box-shadow: 0px 0px 8px rgba(40, 167, 69, 0.5);
+    border-color: #757575;
     outline: none;
 }
 
 /* Стили для таблицы пациентов */
 .patients-table {
     width: 100%;
-    border-collapse: separate;
+    border-collapse: collapse; /* Убрали "separate", чтобы границы таблицы выглядели более цельно */
     margin-top: 20px;
     background-color: #ffffff;
     box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
@@ -87,19 +89,21 @@
 .patients-table th, .patients-table td {
     padding: 15px;
     text-align: left;
-    border-bottom: 1px solid #f0f0f0;
+    border: 1px solid #dcdcdc; /* Установили рамку для всех сторон */
     vertical-align: middle;
 }
 
 .patients-table th {
-    background-color: #f8f9fa;
+    background-color: #94979e;
     font-weight: bold;
-    color: #6c757d;
+    color: #757575;
+    border-bottom: 2px solid #dcdcdc; /* Светло-серая рамка для заголовка */
 }
 
 .patients-table tr:hover td {
     background-color: #f1f1f1;
 }
+
 
 .patients-table th:first-child, 
 .patients-table td:first-child {
@@ -110,14 +114,14 @@
 .patients-table td:last-child button {
     padding: 5px 10px;
     border: none;
-    background-color: #28a745;
+    background-color: #e94949;
     color: white;
-    border-radius: 4px;
+    border-radius: 3px;
     cursor: pointer;
 }
 
 .patients-table td:last-child button:hover {
-    background-color: #218838;
+    background-color: #da1616;
 }
 
 /* Основные стили модальных окон */
@@ -127,11 +131,12 @@
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: white;
-    padding: 50px;
+    padding: 40px;
     border-radius: 12px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
     z-index: 1000;
-    width: 450px;
+    width: 500px;
+    max-width: 90%;
     display: none;
     opacity: 0;
     transition: opacity 0.3s ease-in-out;
@@ -144,12 +149,38 @@
 
 /* Заголовок модального окна */
 .modal h2 {
-    margin-bottom: 20px;
     font-size: 24px;
     color: #333;
     text-align: center;
     font-weight: bold;
+    margin-bottom: 20px;
 }
+
+/* Стили для строки формы */
+.form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+/* Стили для полей ввода и лейблов */
+.form-row label {
+    flex: 0 0 150px; /* Ширина лейбла */
+    font-weight: bold;
+    font-size: 16px;
+    color: #333;
+}
+
+.form-row input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #333;
+}
+
 
 .modal label {
     display: block;
@@ -161,35 +192,42 @@
 
 .modal input {
     width: 100%;
-    padding: 12px;
+    padding: 14px;
     margin-bottom: 20px;
     border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 16px;
     color: #333;
+    transition: border-color 0.3s ease;
 }
 
 .modal input::placeholder {
     color: #999;
-    font-size: 16px;
+}
+
+.modal input:focus {
+    border-color: #757575;
+    outline: none;
 }
 
 .modal-actions {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     margin-top: 20px;
 }
 
 .modal .btn-save {
-    background-color: #ff4d4d;
+    background-color: #e94949;
     color: white;
-    padding: 12px 25px;
+    padding: 12px 30px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 400;
     transition: background-color 0.3s ease;
+    flex: 1;
+    margin-right: 10px;
 }
 
 .modal .btn-save:hover {
@@ -197,14 +235,14 @@
 }
 
 .modal .btn-cancel {
-    background-color: #ccc;
-    color: #333;
-    padding: 12px 25px;
+    background-color: #E6E9F0;
+    color: #000;
+    padding: 12px 30px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
-    margin-left: 10px;
+    flex: 1;
 }
 
 .modal .btn-cancel:hover {
@@ -225,4 +263,85 @@
 
 .overlay.show {
     display: block;
+}
+
+/* Стили для контейнера пагинации */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 5px;
+    background-color: transparent; /* Убираем фон */
+    border: none; /* Убираем границу */
+    margin-top: 30px;
+}
+
+/* Стили для кнопок страниц */
+.page-btn {
+    padding: 10px 15px;
+    border: none;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.page-btn:hover {
+    background-color: #ddd;
+}
+
+.page-btn.active {
+    background-color: #e94949;
+    color: white;
+}
+
+/* Прокручиваемая область для таблицы пациентов */
+.table-wrapper {
+    max-height: 70vh; /* Настройте при необходимости */
+    overflow-y: auto;
+    background-color: transparent; /* Убираем фон */
+    border-bottom: none; /* Убираем нижний бордюр */
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 10px; /* Добавляем нижний отступ */
+}
+
+/* Фиксированный заголовок таблицы */
+.patients-table thead th {
+    font-weight:500;
+    position: sticky;
+    top: 0;
+    background-color: #E6E9F0;
+    z-index: 2;
+}
+
+/* Стили для таблицы */
+.patients-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.patients-table th, .patients-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Поддержка прокрутки при большом количестве строк */
+.patients-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Стили для текстового элемента "Выбрать" */
+.serviceText {
+    color: #28a745; /* Зеленый цвет */
+    font-weight: 100;
+    cursor: pointer; /* Указатель при наведении */
+}
+
+.wardText {
+    color: #28a745; /* Зеленый цвет */
+    font-weight: 100;
+    cursor: pointer; /* Указатель при наведении */
 }
