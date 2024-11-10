@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Администратор - Врачи</title>
     <link rel="stylesheet" href="../styles/dashboard-admin.css">
-    <link rel="stylesheet" href="../styles/patients.css">
+    <link rel="stylesheet" href="../styles/doctors.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="icon" href="/images/favicon.svg" type="image/png">
 </head>
 <body>
     <div class="container">
@@ -36,34 +37,30 @@
                 <!-- Кнопки действий и поиск -->
                 <div class="actions">
                     <div class="action-buttons">
-                        <button id="addPatientBtn">Добавить</button>
-                        <button id="deletePatientBtn" disabled>Удалить</button>
-                        <button id="editPatientBtn" disabled>Изменить</button>
+                        <button id="addDoctorBtn">Добавить</button>
+                        <button id="deleteDoctorBtn" disabled>Удалить</button>
+                        <button id="editDoctorBtn" disabled>Изменить</button>
                     </div>
                     <input type="text" id="searchInput" placeholder="Поиск" class="search-input">
                 </div>
     
-                <!-- Прокручиваемая таблица пациентов -->
+                <!-- Прокручиваемая таблица врачей -->
                 <div class="table-wrapper">
-                    <table class="patients-table">
+                    <table class="doctors-table">
                         <thead>
                             <tr>
                                 <th><input type="checkbox" id="selectAll"></th>
                                 <th>№</th>
                                 <th>ФИО</th>
                                 <th>Специальность</th>
-                                <th>Дата рождения</th>
+                                <th>Комната</th>
+                                <th>Паспорт</th>
                                 <th>Телефон</th>
                                 <th>Адрес</th>
                                 <th>Дата регистрации</th>
-                                <th>Услуга</th>
-                                <th>Палата</th>
-                                <th>Инфо</th>
                             </tr>
                         </thead>
-                        <tbody id="patientsTableBody">
-                            <!-- Здесь будут отображаться пациенты -->
-                        </tbody>
+                        <tbody id="doctorsTableBody"></tbody>
                     </table>
                 </div>
                 <div id="pagination" class="pagination-container"></div>
@@ -71,30 +68,36 @@
         </div>
     </div>
     
-    <!-- Модальное окно для добавления пациента -->
+    <!-- Модальное окно для добавления врача -->
     <div class="overlay" id="overlay"></div>
-    <div id="addPatientModal" class="modal">
-        <h2>Добавить нового пациента</h2>
-        <form id="addPatientForm">
+    <div id="addDoctorModal" class="modal">
+        <h2>Добавить нового врача</h2>
+        <form id="addDoctorForm">
             <div class="form-row">
-                <label for="fullName">ФИО пациента:</label>
-                <input type="text" name="fullName" id="fullName" placeholder="ФИО" required>
+                <label for="doctorFullName">ФИО:</label>
+                <input type="text" name="fullName" id="doctorFullName" placeholder="ФИО" required>
             </div>
             <div class="form-row">
-                <label for="birthDate">Дата рождения:</label>
-                <input type="date" name="birthDate" id="birthDate" placeholder="дд.мм.гггг" required>
+                <label for="doctorSpecialty">Специальность:</label>
+                <select id="doctorSpecialty" name="specialty" required>
+                    <!-- Специальности будут добавлены динамически -->
+                </select>
             </div>
             <div class="form-row">
-                <label for="passport">Паспортные данные:</label>
-                <input type="text" name="passport" id="passport" placeholder="AB0000000" required>
+                <label for="doctorRoom">Комната:</label>
+                <input type="text" name="room" id="doctorRoom" placeholder="Номер комнаты" required>
             </div>
             <div class="form-row">
-                <label for="phone">Телефон:</label>
-                <input type="tel" name="phone" id="phone" placeholder="+998901234567" required>
+                <label for="doctorPassport">Паспорт:</label>
+                <input type="text" name="passport" id="doctorPassport" placeholder="Паспортные данные" required>
             </div>
             <div class="form-row">
-                <label for="address">Адрес:</label>
-                <input type="text" name="address" id="address" placeholder="Адрес" required>
+                <label for="doctorPhone">Телефон:</label>
+                <input type="tel" name="phone" id="doctorPhone" placeholder="Телефон" required>
+            </div>
+            <div class="form-row">
+                <label for="doctorAddress">Адрес:</label>
+                <input type="text" name="address" id="doctorAddress" placeholder="Адрес" required>
             </div>
             <div class="modal-actions">
                 <button type="submit" class="btn-save">Сохранить</button>
@@ -103,31 +106,34 @@
         </form>
     </div>
 
-    
-    <!-- Модальное окно для изменения пациента -->
-    <div id="editPatientModal" class="modal">
-        <h2>Изменить данные пациента</h2>
-        <form id="editPatientForm">
-            <input type="hidden" name="patientId">
+    <!-- Модальное окно для изменения врача -->
+    <div id="editDoctorModal" class="modal">
+        <h2>Изменить данные врача</h2>
+        <form id="editDoctorForm">
+            <input type="hidden" name="doctorId">
             <div class="form-row">
-                <label for="editFullName">ФИО пациента:</label>
-                <input type="text" name="fullName" id="editFullName" placeholder="ФИО" required>
+                <label for="editDoctorFullName">ФИО:</label>
+                <input type="text" name="fullName" id="editDoctorFullName" placeholder="ФИО" required>
             </div>
             <div class="form-row">
-                <label for="editBirthDate">Дата рождения:</label>
-                <input type="date" name="birthDate" id="editBirthDate" placeholder="дд.мм.гггг" required>
+                <label for="editDoctorSpecialty">Специальность:</label>
+                <select id="editDoctorSpecialty" name="specialty" required></select>
             </div>
             <div class="form-row">
-                <label for="editPassport">Паспортные данные:</label>
-                <input type="text" name="passport" id="editPassport" placeholder="AB0000000" required>
+                <label for="editDoctorRoom">Комната:</label>
+                <input type="text" name="room" id="editDoctorRoom" placeholder="Номер комнаты" required>
             </div>
             <div class="form-row">
-                <label for="editPhone">Телефон:</label>
-                <input type="tel" name="phone" id="editPhone" placeholder="+998901234567" required>
+                <label for="editDoctorPassport">Паспорт:</label>
+                <input type="text" name="passport" id="editDoctorPassport" placeholder="Паспортные данные" required>
             </div>
             <div class="form-row">
-                <label for="editAddress">Адрес:</label>
-                <input type="text" name="address" id="editAddress" placeholder="Адрес" required>
+                <label for="editDoctorPhone">Телефон:</label>
+                <input type="tel" name="phone" id="editDoctorPhone" placeholder="Телефон" required>
+            </div>
+            <div class="form-row">
+                <label for="editDoctorAddress">Адрес:</label>
+                <input type="text" name="address" id="editDoctorAddress" placeholder="Адрес" required>
             </div>
             <div class="modal-actions">
                 <button type="submit" class="btn-save">Сохранить</button>
@@ -136,264 +142,131 @@
         </form>
     </div>
 
-
-    <!-- Пустое модальное окно для услуги, палаты и информации -->
-    <div id="serviceModal" class="modal">
-        <h2>Выбрать услугу</h2>
-        <p>Содержимое модального окна для выбора услуги</p>
-        <button class="btn-cancel">Закрыть</button>
-    </div>
-
-    <div id="wardModal" class="modal">
-        <h2>Выбрать палату</h2>
-        <p>Содержимое модального окна для выбора палаты</p>
-        <button class="btn-cancel">Закрыть</button>
-    </div>
-
-    <div id="infoModal" class="modal">
-        <h2>Информация</h2>
-        <p>Содержимое модального окна для информации</p>
-        <button class="btn-cancel">Закрыть</button>
-    </div>
-    
     <script>
-    let selectedPatientId = null;
+            document.addEventListener("DOMContentLoaded", () => {
+        loadDoctors();
+        loadSpecialties();
 
-    // Открытие модальных окон для добавления пациента
-    document.getElementById('addPatientBtn').addEventListener('click', function() {
-        document.getElementById('addPatientModal').classList.add('show');
-        document.getElementById('overlay').classList.add('show');
-    });
+        document.getElementById('addDoctorBtn').addEventListener('click', function() {
+            document.getElementById('addDoctorModal').classList.add('show');
+            document.getElementById('overlay').classList.add('show');
+        });
 
-    // Открытие модальных окон для редактирования пациента
-    document.getElementById('editPatientBtn').addEventListener('click', function() {
-        if (!selectedPatientId) return;
-        fetch(`/patients/${selectedPatientId}`)
+        document.getElementById('editDoctorBtn').addEventListener('click', function() {
+            const selectedDoctorId = getSelectedDoctorId();
+            if (selectedDoctorId) {
+                fetch(`/doctors/${selectedDoctorId}`)
+                    .then(response => response.json())
+                    .then(doctor => {
+                        document.getElementById('editDoctorForm').doctorId.value = doctor._id;
+                        document.getElementById('editDoctorFullName').value = doctor.fullName;
+                        document.getElementById('editDoctorSpecialty').value = doctor.specialty;
+                        document.getElementById('editDoctorRoom').value = doctor.room;
+                        document.getElementById('editDoctorPassport').value = doctor.passport;
+                        document.getElementById('editDoctorPhone').value = doctor.phone;
+                        document.getElementById('editDoctorAddress').value = doctor.address;
+                        document.getElementById('editDoctorModal').classList.add('show');
+                        document.getElementById('overlay').classList.add('show');
+                    });
+            }
+        });
+
+        document.getElementById('overlay').addEventListener('click', closeModal);
+        document.querySelectorAll('.btn-cancel').forEach(button => button.addEventListener('click', closeModal));
+
+        document.getElementById('addDoctorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/doctors/add', {
+                method: 'POST',
+                body: new URLSearchParams(formData)
+            })
             .then(response => response.json())
-            .then(patient => {
-                document.querySelector('#editPatientForm [name="patientId"]').value = patient._id;
-                document.querySelector('#editPatientForm [name="fullName"]').value = patient.fullName;
-                document.querySelector('#editPatientForm [name="birthDate"]').value = patient.birthDate.split('T')[0];
-                document.querySelector('#editPatientForm [name="passport"]').value = patient.passport;
-                document.querySelector('#editPatientForm [name="phone"]').value = patient.phone;
-                document.querySelector('#editPatientForm [name="address"]').value = patient.address;
-                document.getElementById('editPatientModal').classList.add('show');
-                document.getElementById('overlay').classList.add('show');
+            .then(() => {
+                alert('Врач успешно добавлен!');
+                closeModal();
+                loadDoctors();
             });
-    });
-
-    // Закрытие модальных окон при нажатии на overlay
-    document.getElementById('overlay').addEventListener('click', function() {
-        document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('show'));
-        document.getElementById('overlay').classList.remove('show');
-    });
-
-    // Закрытие модальных окон при нажатии кнопки "Отмена" или завершении действия
-    document.querySelectorAll('.btn-cancel').forEach(button => {
-        button.addEventListener('click', function() {
-            document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('show'));
-            document.getElementById('overlay').classList.remove('show');
         });
-    });
 
-    // Обработка добавления пациента
-    document.getElementById('addPatientForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        fetch('/patients/add', {
-            method: 'POST',
-            body: new URLSearchParams(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert('Пациент успешно добавлен!');
-            document.getElementById('addPatientModal').classList.remove('show');
-            document.getElementById('overlay').classList.remove('show');
-            loadPatients(); // Перезагрузка списка пациентов после добавления
-        })
-        .catch(error => {
-            alert('Ошибка при добавлении пациента');
-            console.error(error);
+        document.getElementById('editDoctorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch(`/doctors/edit/${formData.get('doctorId')}`, {
+                method: 'PUT',
+                body: new URLSearchParams(formData)
+            })
+            .then(response => response.json())
+            .then(() => {
+                alert('Данные врача успешно обновлены!');
+                closeModal();
+                loadDoctors();
+            });
         });
-    });
 
-    // Обработчик события для поиска
-    document.getElementById('searchInput').addEventListener('input', function() {
-        const query = this.value.toLowerCase();
-        loadPatients(query); // Передаем запрос в функцию загрузки пациентов
-    });
-
-    // Обработка изменения пациента
-    document.getElementById('editPatientForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        fetch(`/patients/edit/${formData.get('patientId')}`, {
-            method: 'PUT',
-            body: new URLSearchParams(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert('Пациент успешно изменен!');
-            document.getElementById('editPatientModal').classList.remove('show');
-            document.getElementById('overlay').classList.remove('show');
-            loadPatients();
-        })
-        .catch(error => {
-            alert('Ошибка при изменении пациента');
-            console.error(error);
+        document.getElementById('deleteDoctorBtn').addEventListener('click', function() {
+            const selectedDoctorId = getSelectedDoctorId();
+            if (selectedDoctorId && confirm('Вы действительно хотите удалить выбранного врача?')) {
+                fetch(`/doctors/delete/${selectedDoctorId}`, { method: 'DELETE' })
+                    .then(() => {
+                        alert('Врач удалён');
+                        loadDoctors();
+                    });
+            }
         });
-    });
 
-    // Удаление пациента
-    document.getElementById('deletePatientBtn').addEventListener('click', function() {
-        if (!selectedPatientId) return;
-        if (confirm('Вы действительно хотите удалить пациента?')) {
-            fetch(`/patients/delete/${selectedPatientId}`, { method: 'DELETE' })
+        function loadDoctors() {
+            fetch('/doctors/list')
                 .then(response => response.json())
                 .then(data => {
-                    alert('Пациент удален!');
-                    loadPatients();
-                })
-                .catch(error => {
-                    alert('Ошибка при удалении пациента');
-                    console.error(error);
-                });
-        }
-    });
-
-    // Функция для форматирования даты в нужный формат
-    function formatDate(date) {
-        const d = new Date(date);
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const year = d.getFullYear();
-        const hours = String(d.getHours()).padStart(2, '0');
-        const minutes = String(d.getMinutes()).padStart(2, '0');
-        const seconds = String(d.getSeconds()).padStart(2, '0');
-        return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
-    }
-
-    // Глобальные переменные для текущей страницы и количества записей на странице
-    let currentPage = 1;
-    const recordsPerPage = 15;
-
-    // Загрузка списка пациентов с учетом пагинации
-    function loadPatients(searchQuery = '', page = 1) {
-        fetch('/patients/list')
-            .then(response => response.json())
-            .then(data => {
-                const patientsTableBody = document.getElementById('patientsTableBody');
-                patientsTableBody.innerHTML = '';
-
-                // Фильтрация данных на клиенте по запросу
-                const filteredPatients = data.filter(patient => {
-                    return (
-                        patient.fullName.toLowerCase().includes(searchQuery) ||
-                        patient.passport.toLowerCase().includes(searchQuery) ||
-                        patient.phone.toLowerCase().includes(searchQuery) ||
-                        patient.address.toLowerCase().includes(searchQuery)
-                    );
-                });
-
-                // Определяем начало и конец текущей страницы
-                const startIndex = (page - 1) * recordsPerPage;
-                const endIndex = startIndex + recordsPerPage;
-                const patientsToShow = filteredPatients.slice(startIndex, endIndex);
-
-                // Отображаем пациентов на текущей странице
-                patientsToShow.forEach((patient, index) => {
-                    const registrationDate = patient.createdAt ? formatDate(patient.createdAt) : 'Не указано';
-
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td><input type="checkbox" data-patient-id="${patient._id}"></td>
-                        <td>${startIndex + index + 1}</td>
-                        <td>${patient.fullName}</td>
-                        <td>${new Date(patient.birthDate).toLocaleDateString()}</td>
-                        <td>${patient.passport}</td>
-                        <td>${patient.phone}</td>
-                        <td>${patient.address}</td>
-                        <td>${registrationDate}</td>
-                        <td><span class="serviceText">Выбрать</span></td>
-                        <td><span class="wardText">Выбрать</span></td>
-                        <td><button class="infoBtn">Подробнее</button></td>
-                    `;
-                    patientsTableBody.appendChild(row);
-                });
-
-                // Обновляем кнопки пагинации
-                updatePaginationButtons(filteredPatients.length, page);
-
-                // Добавляем обработчики событий для кнопок после добавления строк в таблицу
-                document.querySelectorAll('.serviceText').forEach(button => {
-                    button.addEventListener('click', function() {
-                        document.getElementById('serviceModal').classList.add('show');
-                        document.getElementById('overlay').classList.add('show');
+                    const doctorsTableBody = document.getElementById('doctorsTableBody');
+                    doctorsTableBody.innerHTML = '';
+                    data.forEach((doctor, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td><input type="checkbox" data-doctor-id="${doctor._id}"></td>
+                            <td>${index + 1}</td>
+                            <td>${doctor.fullName}</td>
+                            <td>${doctor.specialty}</td>
+                            <td>${doctor.room}</td>
+                            <td>${doctor.passport}</td>
+                            <td>${doctor.phone}</td>
+                            <td>${doctor.address}</td>
+                            <td>${new Date(doctor.createdAt).toLocaleDateString()}</td>
+                        `;
+                        doctorsTableBody.appendChild(row);
                     });
                 });
+        }
 
-                document.querySelectorAll('.wardText').forEach(button => {
-                    button.addEventListener('click', function() {
-                        document.getElementById('wardModal').classList.add('show');
-                        document.getElementById('overlay').classList.add('show');
+        function loadSpecialties() {
+            fetch('/services/list')
+                .then(response => response.json())
+                .then(services => {
+                    const specialtySelect = document.getElementById('doctorSpecialty');
+                    const editSpecialtySelect = document.getElementById('editDoctorSpecialty');
+                    specialtySelect.innerHTML = ''; 
+                    editSpecialtySelect.innerHTML = ''; 
+                    services.forEach(service => {
+                        const option = document.createElement('option');
+                        option.value = service.serviceName;
+                        option.textContent = service.serviceName;
+                        specialtySelect.appendChild(option.cloneNode(true));
+                        editSpecialtySelect.appendChild(option);
                     });
                 });
-
-                document.querySelectorAll('.infoBtn').forEach(button => {
-                    button.addEventListener('click', function() {
-                        document.getElementById('infoModal').classList.add('show');
-                        document.getElementById('overlay').classList.add('show');
-                    });
-                });
-            });
-    }
-
-    // Функция для обновления кнопок пагинации
-    function updatePaginationButtons(totalRecords, currentPage) {
-        const paginationContainer = document.getElementById('pagination');
-        paginationContainer.innerHTML = '';
-
-        const totalPages = Math.ceil(totalRecords / recordsPerPage);
-
-        for (let i = 1; i <= totalPages; i++) {
-            const pageButton = document.createElement('button');
-            pageButton.textContent = i;
-            pageButton.classList.add('page-btn');
-            if (i === currentPage) {
-                pageButton.classList.add('active');
-            }
-
-            pageButton.addEventListener('click', () => {
-                loadPatients(document.getElementById('searchInput').value.toLowerCase(), i);
-            });
-
-            paginationContainer.appendChild(pageButton);
         }
-    }
 
-    // Инициализация загрузки пациентов при загрузке страницы
-    loadPatients();
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('show'));
+            document.getElementById('overlay').classList.remove('show');
+        }
 
-    // Обработчик события для поиска
-    document.getElementById('searchInput').addEventListener('input', function() {
-        const query = this.value.toLowerCase();
-        currentPage = 1; // Сбрасываем текущую страницу при поиске
-        loadPatients(query, currentPage);
-    });
-
-
-    // Загрузка списка пациентов при открытии страницы
-    loadPatients();
-
-    // Обработка выбора пациентов через чекбоксы
-    document.getElementById('patientsTableBody').addEventListener('click', function(e) {
-        if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
-            selectedPatientId = e.target.dataset.patientId;
-            document.getElementById('editPatientBtn').disabled = !selectedPatientId;
-            document.getElementById('deletePatientBtn').disabled = !selectedPatientId;
+        function getSelectedDoctorId() {
+            const selectedCheckbox = document.querySelector('#doctorsTableBody input[type="checkbox"]:checked');
+            return selectedCheckbox ? selectedCheckbox.dataset.doctorId : null;
         }
     });
-    </script>   
-
+    </script>
 </body>
 </html>

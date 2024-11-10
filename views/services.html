@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../styles/dashboard-admin.css">
     <link rel="stylesheet" href="../styles/services.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="icon" href="/images/favicon.svg" type="image/png">
 </head>
 <body>
     <div class="container">
@@ -50,9 +51,9 @@
                             <tr>
                                 <th><input type="checkbox" id="selectAll"></th>
                                 <th>№</th>
-                                <th>Наименование услуги</th>
-                                <th>Тип услуги</th>
-                                <th>Описание услуги</th>
+                                <th>Наименование</th>
+                                <th>Категория</th>
+                                <th>Описание</th>
                                 <th>Цена</th>
                                 <th>Дата добавления</th>
                             </tr>
@@ -73,15 +74,15 @@
         <h2>Добавить новую услугу</h2>
         <form id="addServiceForm">
             <div class="form-row">
-                <label for="serviceName">Наименование услуги:</label>
+                <label for="serviceName">Наименование:</label>
                 <input type="text" name="serviceName" id="serviceName" placeholder="Наименование услуги" required>
             </div>
             <div class="form-row">
-                <label for="serviceType">Тип услуги:</label>
-                <input type="text" name="serviceType" id="serviceType" placeholder="Тип услуги" required>
+                <label for="serviceType">Категория:</label>
+                <input type="text" name="serviceType" id="serviceType" placeholder="Категория услуги" required>
             </div>
             <div class="form-row">
-                <label for="serviceAbout">Описание услуги:</label>
+                <label for="serviceAbout">Описание:</label>
                 <input type="text" name="serviceAbout" id="serviceAbout" placeholder="Описание услуги" required>
             </div>
             <div class="form-row">
@@ -102,19 +103,19 @@
         <form id="editServiceForm">
             <input type="hidden" name="serviceId">
             <div class="form-row">
-                <label for="editserviceName">Наименование услуги:</label>
+                <label for="editserviceName">Наименование:</label>
                 <input type="text" name="serviceName" id="editserviceName" placeholder="Наименование услуги" required>
             </div>
             <div class="form-row">
-                <label for="editserviceType">Тип услуги:</label>
-                <input type="text" name="serviceType" id="editserviceType" placeholder="Тип услуги" required>
+                <label for="editserviceType">Категория:</label>
+                <input type="text" name="serviceType" id="editserviceType" placeholder="Категория услуги" required>
             </div>
             <div class="form-row">
-                <label for="editserviceAbout">Описание услуги:</label>
+                <label for="editserviceAbout">Описание:</label>
                 <input type="text" name="serviceAbout" id="editserviceAbout" placeholder="Описание услуги" required>
             </div>
             <div class="form-row">
-                <label for="editservicePrice">Цена услуги:</label>
+                <label for="editservicePrice">Цена:</label>
                 <input type="number" name="servicePrice" id="editservicePrice" placeholder="Цена услуги" required>
             </div>
             <div class="modal-actions">

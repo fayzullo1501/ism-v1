@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Новое направление</title>
+    <link rel="stylesheet" href="../styles/dashboard-admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="../styles/newdirection.css">
+    <link rel="icon" href="/images/favicon.svg" type="image/png">
+</head>
+<body>
+
+    <!-- Левая панель с меню -->
+    <div class="sidebar">
+        <div class="logo">
+            <img src="/images/logo.png" alt="Клиника" class="logo-img">
+        </div>
+        <ul class="menu">
+            <li><a href="dashboard-admin.html"><i class="fas fa-home"></i> Главная</a></li>
+            <li><a href="patients.html" class="active"><i class="fas fa-user-injured"></i> Пациенты</a></li>
+            <li><a href="services.html"><i class="fas fa-briefcase-medical"></i> Услуги</a></li>
+            <li><a href="doctors.html"><i class="fas fa-user-md"></i> Врачи</a></li>
+            <li><a href="wards.html"><i class="fas fa-hospital"></i> Палаты</a></li>
+        </ul>
+        <div class="logout">
+            <a href="login.html"><i class="fas fa-sign-out-alt"></i> Выход</a>
+        </div>
+    </div>
+
+    <!-- Правая панель (контент) -->
+    <div class="main-content">
+        <!-- Фиксированный заголовок -->
+        <div class="module-header" >
+            <h1>Новое направление</h1>
+        </div>
+
+        <!-- Белый блок под заголовком -->
+        <div class="white-box">
+            <div class="form-content">
+
+                <!-- Данные пациента -->
+                <div class="module-content">
+                    <h3>Данные пациента:</h3>
+                    <div class="form-row">
+                        <label for="fullName">ФИО пациента:</label>
+                        <input type="text" id="fullName" disabled>
+                    </div>
+                    <div class="form-row">
+                        <label for="birthDate">Дата рождения:</label>
+                        <input type="text" id="birthDate" disabled>
+                    </div>
+                    <div class="form-row">
+                        <label for="passport">Паспортные данные:</label>
+                        <input type="text" id="passport" disabled>
+                    </div>
+                    <div class="form-row">
+                        <label for="phone">Телефон:</label>
+                        <input type="text" id="phone" disabled>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Услуги -->
+                <div class="module-content">
+                    <h3>Услуги:</h3>
+                    <div class="form-row">
+                        <label for="serviceCategory">Выбрать категорию:</label>
+                        <select id="serviceCategory">
+                            <!-- Категории услуг подтягиваются динамически -->
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label for="service">Выбрать услугу:</label>
+                        <select id="service">
+                            <!-- Услуги подтягиваются динамически в зависимости от выбранной категории -->
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label for="doctor">ФИО врача:</label>
+                        <input type="text" id="doctor" disabled>
+                    </div>
+                    <div class="form-row">
+                        <label for="roomNumber">Комната врача:</label>
+                        <input type="text" id="roomNumber" disabled>
+                    </div>
+                    <div class="form-row">
+                        <label for="servicePrice">Цена услуги:</label>
+                        <input type="text" id="servicePrice" disabled>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Палаты -->
+                <div class="module-content">
+                    <h3>Палаты:</h3>
+                    <div class="form-row">
+                        <label for="wardType">Выбрать тип палаты:</label>
+                        <select id="wardType">
+                            <!-- Типы палат подтягиваются динамически -->
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label for="wardNumber">Выбрать номер палаты:</label>
+                        <select id="wardNumber">
+                            <!-- Номера палат подтягиваются динамически -->
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label for="wardCapacity">Количество мест:</label>
+                        <select id="wardCapacity">
+                            <!-- Количество мест подтягивается динамически -->
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label for="wardPrice">Цена палаты:</label>
+                        <input type="text" id="wardPrice" disabled>
+                    </div>
+                </div>
+
+                <!-- Кнопки -->
+                <div class="module-actions">
+                    <button id="saveDirection">Сохранить</button>
+                    <button id="cancelDirection">Отменить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Получаем patientId из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const patientId = urlParams.get('patientId');
+        
+            if (patientId) {
+                fetch(`/patients/${patientId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data) {
+                            document.getElementById('fullName').value = data.fullName || '';
+                            document.getElementById('birthDate').value = new Date(data.birthDate).toLocaleDateString() || '';
+                            document.getElementById('passport').value = data.passport || '';
+                            document.getElementById('phone').value = data.phone || '';
+                        }
+                    })
+                    .catch(err => console.error('Ошибка при получении данных пациента', err));
+            } else {
+                alert('Пациент не выбран. Вернитесь на страницу пациентов.');
+            }
+        
+            const serviceCategorySelect = document.getElementById('serviceCategory');
+            const serviceSelect = document.getElementById('service');
+            const servicePriceInput = document.getElementById('servicePrice'); // Поле для отображения цены
+        
+            // Запрашиваем список всех услуг и заполняем категории и услуги
+            fetch('/services/list')
+                .then(response => response.json())
+                .then(services => {
+                    const servicesByCategory = {};
+        
+                    // Группируем услуги по категориям
+                    services.forEach(service => {
+                        const category = service.serviceType;
+                        if (!servicesByCategory[category]) {
+                            servicesByCategory[category] = [];
+                        }
+                        servicesByCategory[category].push(service);
+                    });
+        
+                    // Заполняем выпадающий список категорий
+                    Object.keys(servicesByCategory).forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category;
+                        option.textContent = category;
+                        serviceCategorySelect.appendChild(option);
+                    });
+        
+                    // Событие изменения категории для обновления списка услуг
+                    serviceCategorySelect.addEventListener('change', function() {
+                        const selectedCategory = this.value;
+        
+                        // Очищаем выпадающий список услуг и поле цены
+                        serviceSelect.innerHTML = '';
+                        servicePriceInput.value = '';
+        
+                        // Заполняем услуги на основе выбранной категории
+                        if (servicesByCategory[selectedCategory]) {
+                            servicesByCategory[selectedCategory].forEach(service => {
+                                const option = document.createElement('option');
+                                option.value = service._id;
+                                option.textContent = service.serviceName;
+                                option.dataset.price = service.servicePrice; // Сохраняем цену как атрибут данных
+                                serviceSelect.appendChild(option);
+                            });
+        
+                            // Выбираем первую услугу и отображаем её цену
+                            serviceSelect.selectedIndex = 0;
+                            const firstOption = serviceSelect.options[0];
+                            if (firstOption) {
+                                servicePriceInput.value = `${firstOption.dataset.price} Сум`;
+                            }
+                        }
+                    });
+        
+                    // Событие изменения услуги для отображения цены
+                    serviceSelect.addEventListener('change', function() {
+                        const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+                        const price = selectedOption ? selectedOption.dataset.price : '';
+                        servicePriceInput.value = price ? `${price} Сум` : ''; // Отображаем цену в поле "Цена услуги"
+                    });
+                })
+                .catch(err => console.error('Ошибка при получении списка услуг', err));
+        });
+    </script>
+        
+        
+        
+        
+        
+        
+</body>
+</html>

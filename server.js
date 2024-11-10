@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth');
 const patientRoutes = require('./routes/patient');
 const serviceRoutes = require('./routes/service'); // Маршрут для услуг
 const wardRoutes = require('./routes/ward'); // Маршрут для палат
+const doctorRoutes = require('./routes/doctor'); // Маршрут для врачей
 
 const app = express();
 const PORT = 3000;
@@ -26,11 +27,12 @@ app.get('/', (req, res) => {
     res.redirect('/login'); // Перенаправляем на /login
 });
 
-// Используем маршруты авторизации, пациентов, услуг и палат
+// Используем маршруты авторизации, пациентов, услуг, палат и врачей
 app.use(authRoutes);
 app.use('/patients', patientRoutes);
 app.use('/services', serviceRoutes); // Подключение маршрута для услуг
 app.use('/wards', wardRoutes); // Подключение маршрута для палат
+app.use('/doctors', doctorRoutes); // Подключение маршрута для врачей
 
 // Запуск сервера
 app.listen(PORT, () => {
