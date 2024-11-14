@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Администратор - Палаты</title>
+    <link rel="stylesheet" href="../styles/dashboard-admin.css">
+    <link rel="stylesheet" href="../styles/wards.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="icon" href="/images/favicon.svg" type="image/png">
+</head>
+<body>
+    <div class="container">
+        <!-- Левая панель с меню -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="/images/logo.png" alt="Клиника" class="logo-img">
+            </div>
+            <ul class="menu">
+                <li><a href="dashboard-admin.html"><i class="fas fa-home"></i> Главная</a></li>
+                <li><a href="patients.html"><i class="fas fa-user-injured"></i> Пациенты</a></li>
+                <li><a href="services.html"><i class="fas fa-briefcase-medical"></i> Услуги</a></li>
+                <li><a href="doctors.html"><i class="fas fa-user-md"></i> Врачи</a></li>
+                <li><a href="wards.html" class="active"><i class="fas fa-hospital"></i> Палаты</a></li>
+            </ul>
+            <div class="logout">
+                <a href="login.html"><i class="fas fa-sign-out-alt"></i> Выход</a>
+            </div>
+        </div>
+    
+        <!-- Правая панель (контент) -->
+        <div class="main-content">
+            <div class="module-header">
+                <h1>Палаты</h1>
+            </div>
+            <div class="module-content">
+                <!-- Кнопки действий и поиск -->
+ <div class="actions">
+                    <div class="action-buttons">
+                        <button id="addWardBtn">Добавить</button>
+                        <button id="deleteWardBtn" disabled>Удалить</button>
+                        <button id="editWardBtn" disabled>Изменить</button>
+                    </div>
+                    <input type="text" id="searchInput" placeholder="Поиск" class="search-input">
+                </div>
+    
+                <!-- Прокручиваемая таблица палат -->
+                <div class="table-wrapper">
+                    <table class="wards-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
+                                <th>№</th>
+                                <th>Номер палаты</th>
+                                <th>Тип палаты</th>
+                                <th>Кол-во мест</th>
+                                <th>Цена</th>
+                                <th>Дата добавления</th>
+                            </tr>
+                        </thead>
+                        <tbody id="wardsTableBody">
+                            <!-- Здесь будут отображаться палаты -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="pagination" class="pagination-container"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно для добавления палаты -->
+    <div class="overlay" id="overlay"></div>
+    <div id="addWardModal" class="modal">
+        <h2>Добавить новую палату</h2>
+        <form id="addWardForm">
+            <div class="form-row">
+                <label for="wardNumber">Номер палаты:</label>
+                <input type="text" name="wardNumber" id="wardNumber" placeholder="Номер палаты" required>
+            </div>
+            <div class="form-row">
+                <label for="wardType">Тип палаты:</label>
+                <input type="text" name="wardType" id="wardType" placeholder="Тип палаты" required>
+            </div>
+            <div class="form-row">
+                <label for="wardCapacity">Кол-во мест:</label>
+                <input type="number" name="wardCapacity" id="wardCapacity" placeholder="Кол-во мест" required>
+            </div>
+            <div class="form-row">
+                <label for="wardPrice">Цена:</label>
+                <input type="number" name="wardPrice" id="wardPrice" placeholder="Цена" required>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn-save">Сохранить</button>
+                <button type="button" class="btn-cancel">Отменить</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Модальное окно для изменения палаты -->
+    <div id="editWardModal" class="modal">
+        <h2>Изменить данные палаты</h2>
+        <form id="editWardForm">
+            <input type="hidden" name="wardId">
+            <div class="form-row">
+                <label for="editWardNumber">Номер палаты:</label>
+                <input type="text" name="wardNumber" id="editWardNumber" placeholder="Номер палаты" required>
+            </div>
+            <div class="form-row">
+                <label for="editWardType">Тип палаты:</label>
+                <input type="text" name="wardType" id="editWardType" placeholder="Тип палаты" required>
+            </div>
+            <div class="form-row">
+                <label for="editWardCapacity">Кол-во мест:</label>
+                <input type="number" name="wardCapacity" id="editWardCapacity" placeholder="Кол-во мест" required>
+            </div>
+            <div class="form-row">
+                <label for="editWardPrice">Цена:</label>
+                <input type="number" name="wardPrice" id="editWardPrice" placeholder="Цена" required>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn-save">Сохранить</button>
+                <button type="button" class="btn-cancel">Отменить</button>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        let selectedWardId = null;
+
+// Открытие модальных окон для добавления палаты
+document.getElementById('addWardBtn').addEventListener('click', function() {
+    document.getElementById('addWardModal').classList.add('show');
+    document.getElementById('overlay').classList.add('show');
+});
+
+// Открытие модальных окон для редактирования палаты
+document.getElementById('editWardBtn').addEventListener('click', function() {
+    if (!selectedWardId) return;
+    fetch(`/wards/${selectedWardId}`)
+        .then(response => response.json())
+        .then(ward => {
+            document.querySelector('#editWardForm [name="wardId"]').value = ward._id;
+            document.querySelector('#editWardForm [name="wardNumber"]').value = ward.wardNumber;
+            document.querySelector('#editWardForm [name="wardType"]').value = ward.wardType;
+            document.querySelector('#editWardForm [name="wardCapacity"]').value = ward.wardCapacity;
+            document.querySelector('#editWardForm [name="wardPrice"]').value = ward.wardPrice;
+            document.getElementById('editWardModal').classList.add('show');
+            document.getElementById('overlay').classList.add('show');
+        })
+        .catch(error => {
+            console.error('Ошибка при загрузке данных палаты:', error); // Отладочное сообщение
+        });
+});
+
+// Закрытие модальных окон при нажатии на overlay
+document.getElementById('overlay').addEventListener('click', function() {
+    document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('show'));
+    document.getElementById('overlay').classList.remove('show');
+});
+
+// Закрытие модальных окон при нажатии кнопки "Отмена" или завершении действия
+document.querySelectorAll('.btn-cancel').forEach(button => {
+    button.addEventListener('click', function() {
+        document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('show'));
+        document.getElementById('overlay').classList.remove('show');
+    });
+});
+
+// Обработка добавления палаты
+document.getElementById('addWardForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    fetch('/wards/add', {
+        method: 'POST',
+        body: new URLSearchParams(formData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Ошибка сети');
+        }
+        return response.json();
+    })
+    .then(data => {
+        alert('Палата успешно добавлена!');
+        document.getElementById('addWardModal').classList.remove('show');
+        document.getElementById('overlay').classList.remove('show');
+        loadWards(); // Перезагрузка списка палат после добавления
+    })
+    .catch(error => {
+        alert('Ошибка при добавлении палаты: ' + error.message);
+        console.error(error);
+    });
+});
+
+// Обработка изменения палаты
+document.getElementById('editWardForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    fetch(`/wards/edit/${formData.get('wardId')}`, {
+        method: 'PUT',
+        body: new URLSearchParams(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Палата успешно изменена!');
+        document.getElementById('editWardModal').classList.remove('show');
+        document.getElementById('overlay').classList.remove('show');
+        loadWards();
+    })
+    .catch(error => {
+        alert('Ошибка при изменении палаты');
+        console.error(error);
+    });
+});
+
+// Удаление палаты
+document.getElementById('deleteWardBtn').addEventListener('click', function() {
+    if (!selectedWardId) return;
+    if (confirm('Вы действительно хотите удалить палату?')) {
+        fetch(`/wards/delete/${selectedWardId}`, { method: 'DELETE' })
+            .then(response => response.json())
+            .then(data => {
+                alert('Палата удалена!');
+                loadWards();
+            })
+            .catch(error => {
+                alert('Ошибка при удалении палаты');
+                console.error(error);
+            });
+    }
+});
+
+// Глобальные переменные для текущей страницы и количества записей на странице
+let currentPage = 1;
+const recordsPerPage = 15;
+
+// Загрузка списка палат с учетом пагинации
+function loadWards(searchQuery = '', page = 1) {
+    fetch('/wards/list')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Данные из API:', data); // Логируем данные из API
+            const wardsTableBody = document.getElementById('wardsTableBody');
+            wardsTableBody.innerHTML = ''; // Очищаем таблицу перед загрузкой новых данных
+
+            // Фильтрация данных на клиенте по запросу
+            const filteredWards = data.filter(ward => {
+                return (
+                    ward.wardNumber.toString().toLowerCase().includes(searchQuery) ||
+                    ward.wardType.toLowerCase().includes(searchQuery) ||
+                    ward.wardCapacity.toString().includes(searchQuery) ||
+                    ward.wardPrice.toString().includes(searchQuery)
+                );
+            });
+
+            console.log('Отфильтрованные данные:', filteredWards); // Логируем отфильтрованные данные
+
+            // Проверяем, что есть данные для отображения
+            if (filteredWards.length === 0) {
+                wardsTableBody.innerHTML = '<tr><td colspan="7">Нет данных для отображения</td></tr>';
+                return;
+            }
+
+            // Определяем начало и конец текущей страницы
+            const startIndex = (page - 1) * recordsPerPage;
+            const endIndex = startIndex + recordsPerPage;
+            const wardsToShow = filteredWards.slice(startIndex, endIndex);
+
+            console.log('Данные для отображения на странице:', wardsToShow); // Логируем данные для отображения
+
+            // Отображаем палаты на текущей странице
+            wardsToShow.forEach((ward, index) => {
+                const registrationDate = ward.createdAt ? formatDate(ward.createdAt) : 'Не указано';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="checkbox" data-ward-id="${ward._id}"></td>
+                    <td>${startIndex + index + 1}</td>
+                    <td>${ward.wardNumber}</td>
+                    <td>${ward.wardType}</td>
+                    <td>${ward.wardCapacity}</td>
+                    <td>${ward.wardPrice} Сум</td>
+                    <td>${registrationDate}</td>
+                `;
+                wardsTableBody.appendChild(row);
+            });
+
+            // Обновляем кнопки пагинации
+            updatePaginationButtons(filteredWards.length, page);
+        })
+        .catch(error => {
+            console.error('Ошибка при загрузке палат:', error); // Логируем ошибку
+        });
+}
+
+// Функция для обновления кнопок пагинации
+function updatePaginationButtons(totalRecords, currentPage) {
+    const paginationContainer = document.getElementById('pagination');
+    paginationContainer.innerHTML = '';
+
+    const totalPages = Math.ceil(totalRecords / recordsPerPage);
+
+    for (let i = 1; i <= totalPages; i++) {
+        const pageButton = document.createElement('button');
+        pageButton.textContent = i;
+        pageButton.classList.add('page-btn');
+        if (i === currentPage) {
+            pageButton.classList.add('active');
+        }
+
+        pageButton.addEventListener('click', () => {
+            loadWards(document.getElementById('searchInput').value.toLowerCase(), i);
+        });
+
+        paginationContainer.appendChild(pageButton);
+    }
+}
+
+// Инициализация загрузки палат при загрузке страницы
+loadWards();
+
+// Обработчик события для поиска
+document.getElementById('searchInput').addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    console.log('Текущий запрос поиска:', query); // Отладочное сообщение
+    currentPage = 1; // Сбрасываем текущую страницу при поиске
+    loadWards(query, currentPage);
+});
+
+// Обработка выбора палат через чекбоксы
+document.getElementById('wardsTableBody').addEventListener('click', function(e) {
+    if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
+        selectedWardId = e.target.dataset.wardId;
+        document.getElementById('editWardBtn').disabled = !selectedWardId;
+        document.getElementById('deleteWardBtn').disabled = !selectedWardId;
+    }
+});
+
+// Функция форматирования даты
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(); // Можно использовать любой формат
+}
+
+    </script>   
+
+</body>
+</html>

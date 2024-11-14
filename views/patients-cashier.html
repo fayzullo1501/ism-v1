@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Касса - Пациенты</title>
+    <link rel="stylesheet" href="/styles/dashboard-admin.css">
+    <link rel="stylesheet" href="/styles/patients.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="icon" href="/images/favicon.svg" type="image/png">
+</head>
+<body>
+    <div class="container">
+        <!-- Левая панель с меню -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="/images/logo.png" alt="Клиника" class="logo-img">
+            </div>
+            <ul class="menu">
+                <li><a href="dashboard-cashier.html"><i class="fas fa-home"></i> Главная</a></li>
+                <li><a href="patients-cashier.html" class="active"><i class="fas fa-user-injured"></i> Пациенты</a></li>
+            </ul>
+            <div class="logout">
+                <a href="/logout"><i class="fas fa-sign-out-alt"></i> Выход</a>
+            </div>
+        </div>
+    
+        <!-- Правая панель с таблицей пациентов -->
+        <div class="main-content">
+            <div class="module-header">
+                <h1>Пациенты - Касса</h1>
+            </div>
+            <div class="module-content">
+                <!-- Форма поиска и кнопка Оплатить -->
+                <div class="actions">
+                    <div class="action-buttons">
+                        <button id="payButton" disabled>Оплатить</button>
+                    </div>
+                    <input type="text" id="searchInput" placeholder="Поиск по ФИО, паспорту, телефону" class="search-input">
+                </div>
+
+                <!-- Таблица пациентов -->
+                <div class="table-wrapper">
+                    <table class="patients-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
+                                <th>№</th>
+                                <th>ФИО</th>
+                                <th>Дата рождения</th>
+                                <th>Паспортные данные</th>
+                                <th>Телефон</th>
+                                <th>Наименование услуги</th>
+                                <th>ФИО врача</th>
+                                <th>Палата</th>
+                                <th>Цена</th>
+                                <th>Статус оплаты</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patientsTableBody">
+                            <!-- Данные будут вставляться динамически -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="pagination" class="pagination-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedPatientId = null;
+
+        // Загрузка списка пациентов с услугами из базы данных
+        function loadPatients(searchQuery = '', page = 1) {
+            fetch('/patients/get-directions') // Получаем данные направлений
+                .then(response => response.json())
+                .then(data => {
+                    const patientsTableBody = document.getElementById('patientsTableBody');
+                    patientsTableBody.innerHTML = '';
+
+                    // Фильтрация данных по запросу
+                    const filteredPatients = data.filter(patient => {
+                        return (
+                            patient.fullName.toLowerCase().includes(searchQuery) ||
+                            patient.passport.toLowerCase().includes(searchQuery) ||
+                            patient.phone.toLowerCase().includes(searchQuery)
+                        );
+                    });
+
+                    // Определяем начало и конец текущей страницы
+                    const startIndex = (page - 1) * 10;
+                    const endIndex = startIndex + 10;
+                    const patientsToShow = filteredPatients.slice(startIndex, endIndex);
+
+                    // Заполнение таблицы данными
+                    patientsToShow.forEach((patient, index) => {
+                        const paymentStatus = patient.paid ? 'Оплачено' : 'Не оплачено';
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td><input type="checkbox" data-patient-id="${patient._id}"></td>
+                            <td>${startIndex + index + 1}</td>
+                            <td>${patient.fullName}</td>
+                            <td>${new Date(patient.birthDate).toLocaleDateString()}</td>
+                            <td>${patient.passport}</td>
+                            <td>${patient.phone}</td>
+                            <td>${patient.serviceName}</td>
+                            <td>${patient.doctorName}</td>
+                            <td>${patient.servicePrice} UZS</td>
+                            <td>${paymentStatus}</td>
+                            <td><button class="payBtn" data-patient-id="${patient._id}">${paymentStatus === 'Не оплачено' ? 'Оплатить' : 'Оплачено'}</button></td>
+                        `;
+                        patientsTableBody.appendChild(row);
+                    });
+
+                    // Обновление пагинации
+                    updatePaginationButtons(filteredPatients.length, page);
+
+                    // Добавление обработчика на кнопки "Оплатить"
+                    document.querySelectorAll('.payBtn').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const patientId = button.dataset.patientId;
+                            payForService(patientId); // Оплата услуги
+                        });
+                    });
+                });
+        }
+
+        // Функция для обновления кнопок пагинации
+        function updatePaginationButtons(totalRecords, currentPage) {
+            const paginationContainer = document.getElementById('pagination');
+            paginationContainer.innerHTML = '';
+
+            const totalPages = Math.ceil(totalRecords / 10);
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.classList.add('page-btn');
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                }
+
+                pageButton.addEventListener('click', () => {
+                    loadPatients(document.getElementById('searchInput').value.toLowerCase(), i);
+                });
+
+                paginationContainer.appendChild(pageButton);
+            }
+        }
+
+        // Функция для оплаты услуги
+        function payForService(patientId) {
+            if (confirm('Вы уверены, что хотите провести оплату?')) {
+                fetch(`/patients/pay/${patientId}`, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert('Оплата успешно проведена!');
+                        loadPatients(); // Перезагрузка списка после оплаты
+                    })
+                    .catch(error => {
+                        alert('Ошибка при оплате');
+                        console.error(error);
+                    });
+            }
+        }
+
+        // Обработчик события для поиска
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            loadPatients(query); // Загружаем пациентов с фильтрацией
+        });
+
+        // Инициализация загрузки пациентов при загрузке страницы
+        loadPatients();
+
+        // Обработчик события для выбора пациентов
+        document.getElementById('patientsTableBody').addEventListener('change', function(e) {
+            if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
+                selectedPatientId = e.target.dataset.patientId;
+                document.getElementById('payButton').disabled = !selectedPatientId;
+            }
+        });
+    </script>
+</body>
+</html>

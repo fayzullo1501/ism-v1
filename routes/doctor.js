@@ -8,13 +8,10 @@ router.post('/add', doctorController.addDoctor);
 // Маршрут для получения списка врачей
 router.get('/list', doctorController.getDoctors);
 
-// Маршрут для получения списка специальностей (услуг)
-router.get('/specialties', doctorController.getSpecialties);
-
-// Маршрут для получения данных врача по ID
+// Маршрут для получения врача по ID (для редактирования)
 router.get('/:id', doctorController.getDoctorById);
 
-// Маршрут для обновления данных врача
+// Маршрут для изменения данных врача
 router.put('/edit/:id', doctorController.updateDoctor);
 
 // Маршрут для удаления врача

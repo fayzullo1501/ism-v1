@@ -16,6 +16,12 @@ exports.handleLogin = async (req, res) => {
             res.redirect('/dashboard-doctor'); // Перенаправление на панель врача
         } else if (role === 'Администратор') {
             res.redirect('/dashboard-admin'); // Перенаправление на панель администратора
+        } else if (role === 'Касса') {
+            res.redirect('/dashboard-cashier'); // Перенаправление на панель кассира
+        } else if (role === 'Лаборатория') {
+            res.redirect('/dashboard-laboratory'); // Перенаправление на панель лаборатории
+        } else if (role === 'Регистратура') {
+            res.redirect('/dashboard-reception'); // Перенаправление на панель регистрации
         }
     } catch (error) {
         res.status(500).send('Ошибка сервера'); // Сообщение об ошибке сервера

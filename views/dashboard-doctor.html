@@ -3,18 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Панель управления врача</title>
-    <link rel="stylesheet" href="/styles/dashboard.css"> <!-- Подключим отдельный CSS файл -->
+    <title>Врачи - Главная</title>
+    <link rel="stylesheet" href="../styles/dashboard-admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="icon" href="/images/favicon.svg" type="image/png">
 </head>
 <body>
-    <h1>Добро пожаловать, Врач!</h1>
-    <p>Здесь вы можете управлять пациентами, назначениями и другими функциями.</p>
-    <!-- Добавим меню для врача -->
-    <ul>
-        <li><a href="/patients">Пациенты</a></li>
-        <li><a href="/appointments">Назначения</a></li>
-        <li><a href="/logout">Выйти</a></li>
-    </ul>
+    <div class="container">
+        <!-- Левая панель с меню -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="/images/logo.png" alt="Клиника" class="logo-img">
+            </div>
+            <ul class="menu">
+                <li><a href="dashboard-doctor.html" class="active"><i class="fas fa-home"></i> Главная</a></li>
+                <li><a href="patients-doctor.html"><i class="fas fa-user-injured"></i> Пациенты</a></li>
+            </ul>
+            <div class="logout">
+                <a href="/logout"><i class="fas fa-sign-out-alt"></i> Выход</a>
+            </div>
+        </div>
+
+        <!-- Правая панель с контентом -->
+        <div class="main-content">
+            <div class="module-header">
+                <h1>Врачи</h1>
+            </div>
+            <div class="module-content">
+                <p>Добро пожаловать в панель врача! </p>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
