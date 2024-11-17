@@ -79,7 +79,9 @@
                     </div>
                     <div class="form-row">
                         <label for="doctor">ФИО врача:</label>
-                        <input type="text" id="doctor" disabled>
+                        <select id="doctor">
+                            <!-- Врачи подтягиваются динамически в зависимости от выбранной услуги -->
+                        </select>
                     </div>
                     <div class="form-row">
                         <label for="roomNumber">Комната врача:</label>
@@ -89,11 +91,11 @@
                         <label for="servicePrice">Цена услуги:</label>
                         <input type="text" id="servicePrice" disabled>
                     </div>
-                </div>
+                </div>                
 
                 <hr>
 
-                <!-- Палаты -->
+                <!-- Раздел "Палаты" -->
                 <div class="module-content">
                     <h3>Палаты:</h3>
                     <div class="form-row">
@@ -115,10 +117,23 @@
                         </select>
                     </div>
                     <div class="form-row">
+                        <label for="wardDays">Количество дней:</label>
+                        <select id="wardDays">
+                            <!-- Количество дней -->
+                        </select>
+                    </div>
+                    <div class="form-row">
                         <label for="wardPrice">Цена палаты:</label>
                         <input type="text" id="wardPrice" disabled>
                     </div>
                 </div>
+
+                <!-- Общая стоимость -->
+                <div class="module-content">
+                    <h3>Общая стоимость:</h3>
+                    <p id="totalPrice">0 Сум</p>
+                </div>
+
 
                 <!-- Кнопки -->
                 <div class="module-actions">
@@ -133,11 +148,32 @@
 
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Получаем patientId из URL
+        document.addEventListener("DOMContentLoaded", function () {
+            // Элементы для раздела "Услуги"
+            const serviceCategorySelect = document.getElementById('serviceCategory');
+            const serviceSelect = document.getElementById('service');
+            const doctorSelect = document.getElementById('doctor');
+            const servicePriceInput = document.getElementById('servicePrice');
+            const roomNumberInput = document.getElementById('roomNumber');
+    
+            // Элементы для раздела "Палаты"
+            const wardTypeSelect = document.getElementById('wardType');
+            const wardNumberSelect = document.getElementById('wardNumber');
+            const wardPriceInput = document.getElementById('wardPrice');
+            const wardCapacitySelect = document.getElementById('wardCapacity');
+            const wardDaysSelect = document.getElementById('wardDays');
+    
+            // Элемент для отображения общей цены
+            const totalPriceElement = document.getElementById('totalPrice');
+    
+            // Кнопки
+            const saveDirectionButton = document.getElementById('saveDirection');
+            const cancelDirectionButton = document.getElementById('cancelDirection');
+    
+            // --- Загрузка данных пациента ---
             const urlParams = new URLSearchParams(window.location.search);
             const patientId = urlParams.get('patientId');
-        
+    
             if (patientId) {
                 fetch(`/patients/${patientId}`)
                     .then(response => response.json())
@@ -149,22 +185,22 @@
                             document.getElementById('phone').value = data.phone || '';
                         }
                     })
-                    .catch(err => console.error('Ошибка при получении данных пациента', err));
+                    .catch(err => console.error('Ошибка при загрузке данных пациента:', err));
             } else {
                 alert('Пациент не выбран. Вернитесь на страницу пациентов.');
             }
-        
-            const serviceCategorySelect = document.getElementById('serviceCategory');
-            const serviceSelect = document.getElementById('service');
-            const servicePriceInput = document.getElementById('servicePrice'); // Поле для отображения цены
-        
-            // Запрашиваем список всех услуг и заполняем категории и услуги
+    
+            // --- Раздел "Услуги" ---
             fetch('/services/list')
                 .then(response => response.json())
                 .then(services => {
                     const servicesByCategory = {};
-        
-                    // Группируем услуги по категориям
+    
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = 'Выберите категорию';
+                    serviceCategorySelect.appendChild(defaultOption);
+    
                     services.forEach(service => {
                         const category = service.serviceType;
                         if (!servicesByCategory[category]) {
@@ -172,57 +208,203 @@
                         }
                         servicesByCategory[category].push(service);
                     });
-        
-                    // Заполняем выпадающий список категорий
+    
                     Object.keys(servicesByCategory).forEach(category => {
                         const option = document.createElement('option');
                         option.value = category;
                         option.textContent = category;
                         serviceCategorySelect.appendChild(option);
                     });
-        
-                    // Событие изменения категории для обновления списка услуг
-                    serviceCategorySelect.addEventListener('change', function() {
+    
+                    serviceCategorySelect.addEventListener('change', function () {
                         const selectedCategory = this.value;
-        
-                        // Очищаем выпадающий список услуг и поле цены
                         serviceSelect.innerHTML = '';
+                        doctorSelect.innerHTML = '';
                         servicePriceInput.value = '';
-        
-                        // Заполняем услуги на основе выбранной категории
+                        roomNumberInput.value = '';
+    
+                        const defaultServiceOption = document.createElement('option');
+                        defaultServiceOption.value = '';
+                        defaultServiceOption.textContent = 'Выберите услугу';
+                        serviceSelect.appendChild(defaultServiceOption);
+    
                         if (servicesByCategory[selectedCategory]) {
                             servicesByCategory[selectedCategory].forEach(service => {
                                 const option = document.createElement('option');
                                 option.value = service._id;
                                 option.textContent = service.serviceName;
-                                option.dataset.price = service.servicePrice; // Сохраняем цену как атрибут данных
+                                option.dataset.price = service.servicePrice;
                                 serviceSelect.appendChild(option);
                             });
-        
-                            // Выбираем первую услугу и отображаем её цену
-                            serviceSelect.selectedIndex = 0;
-                            const firstOption = serviceSelect.options[0];
-                            if (firstOption) {
-                                servicePriceInput.value = `${firstOption.dataset.price} Сум`;
-                            }
                         }
+    
+                        updateTotalPrice();
                     });
-        
-                    // Событие изменения услуги для отображения цены
-                    serviceSelect.addEventListener('change', function() {
-                        const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-                        const price = selectedOption ? selectedOption.dataset.price : '';
-                        servicePriceInput.value = price ? `${price} Сум` : ''; // Отображаем цену в поле "Цена услуги"
+    
+                    serviceSelect.addEventListener('change', function () {
+                        const selectedService = this.options[this.selectedIndex];
+                        servicePriceInput.value = selectedService ? parseFloat(selectedService.dataset.price || 0) : 0;
+    
+                        fetch('/doctors/list')
+                            .then(response => response.json())
+                            .then(doctors => {
+                                doctorSelect.innerHTML = '';
+                                const defaultDoctorOption = document.createElement('option');
+                                defaultDoctorOption.value = '';
+                                defaultDoctorOption.textContent = 'Выберите врача';
+                                doctorSelect.appendChild(defaultDoctorOption);
+    
+                                const filteredDoctors = doctors.filter(doctor => doctor.specialty === selectedService.textContent);
+    
+                                filteredDoctors.forEach(doctor => {
+                                    const option = document.createElement('option');
+                                    option.value = doctor._id;
+                                    option.textContent = doctor.fullName;
+                                    option.dataset.room = doctor.room || 'Нет комнаты';
+                                    doctorSelect.appendChild(option);
+                                });
+    
+                                updateTotalPrice();
+                            })
+                            .catch(err => console.error('Ошибка при загрузке врачей:', err));
+                    });
+    
+                    doctorSelect.addEventListener('change', function () {
+                        const selectedDoctor = this.options[this.selectedIndex];
+                        roomNumberInput.value = selectedDoctor ? selectedDoctor.dataset.room : 'Не указано';
                     });
                 })
-                .catch(err => console.error('Ошибка при получении списка услуг', err));
+                .catch(err => console.error('Ошибка при загрузке услуг:', err));
+    
+            // --- Раздел "Палаты" ---
+            fetch('/wards/list')
+                .then(response => response.json())
+                .then(wards => {
+                    const wardsByType = {};
+    
+                    const defaultTypeOption = document.createElement('option');
+                    defaultTypeOption.value = '';
+                    defaultTypeOption.textContent = 'Выберите тип палаты';
+                    wardTypeSelect.appendChild(defaultTypeOption);
+    
+                    wards.forEach(ward => {
+                        const type = ward.wardType;
+                        if (!wardsByType[type]) {
+                            wardsByType[type] = [];
+                        }
+                        wardsByType[type].push(ward);
+                    });
+    
+                    Object.keys(wardsByType).forEach(type => {
+                        const option = document.createElement('option');
+                        option.value = type;
+                        option.textContent = type;
+                        wardTypeSelect.appendChild(option);
+                    });
+    
+                    wardTypeSelect.addEventListener('change', function () {
+                        const selectedType = this.value;
+                        wardNumberSelect.innerHTML = '';
+                        wardPriceInput.value = '';
+                        wardCapacitySelect.innerHTML = '';
+    
+                        const defaultNumberOption = document.createElement('option');
+                        defaultNumberOption.value = '';
+                        defaultNumberOption.textContent = 'Выберите номер палаты';
+                        wardNumberSelect.appendChild(defaultNumberOption);
+    
+                        if (wardsByType[selectedType]) {
+                            wardsByType[selectedType].forEach(ward => {
+                                const option = document.createElement('option');
+                                option.value = ward.wardNumber;
+                                option.textContent = ward.wardNumber;
+                                option.dataset.price = ward.wardPrice;
+                                option.dataset.capacity = ward.wardCapacity;
+                                wardNumberSelect.appendChild(option);
+                            });
+                        }
+    
+                        updateTotalPrice();
+                    });
+    
+                    wardNumberSelect.addEventListener('change', function () {
+                        const selectedWard = this.options[this.selectedIndex];
+                        wardPriceInput.value = selectedWard ? parseFloat(selectedWard.dataset.price || 0) : 0;
+    
+                        wardCapacitySelect.innerHTML = '';
+                        const defaultCapacityOption = document.createElement('option');
+                        defaultCapacityOption.value = '';
+                        defaultCapacityOption.textContent = 'Выберите количество мест';
+                        wardCapacitySelect.appendChild(defaultCapacityOption);
+    
+                        const capacity = selectedWard ? parseInt(selectedWard.dataset.capacity || 0) : 0;
+                        for (let i = 1; i <= capacity; i++) {
+                            const option = document.createElement('option');
+                            option.value = i;
+                            option.textContent = i;
+                            wardCapacitySelect.appendChild(option);
+                        }
+    
+                        updateTotalPrice();
+                    });
+    
+                    wardCapacitySelect.addEventListener('change', updateTotalPrice);
+    
+                    for (let i = 1; i <= 30; i++) {
+                        const option = document.createElement('option');
+                        option.value = i;
+                        option.textContent = i;
+                        wardDaysSelect.appendChild(option);
+                    }
+                    wardDaysSelect.addEventListener('change', updateTotalPrice);
+                })
+                .catch(err => console.error('Ошибка при загрузке палат:', err));
+    
+            // --- Перерасчет общей стоимости ---
+            function updateTotalPrice() {
+                const servicePrice = parseFloat(servicePriceInput.value) || 0;
+                const wardPrice = parseFloat(wardPriceInput.value) || 0;
+                const wardCapacity = parseInt(wardCapacitySelect.value) || 0;
+                const wardDays = parseInt(wardDaysSelect.value) || 1;
+    
+                const totalWardPrice = wardPrice * wardCapacity * wardDays;
+                const totalPrice = servicePrice + totalWardPrice;
+    
+                totalPriceElement.textContent = `${totalPrice} Сум`;
+            }
+    
+            // --- Обработка кнопок ---
+            saveDirectionButton.addEventListener('click', function () {
+                const directionData = {
+                    patientId,
+                    serviceName: serviceSelect.options[serviceSelect.selectedIndex]?.textContent || '',
+                    doctorName: doctorSelect.options[doctorSelect.selectedIndex]?.textContent || '',
+                    roomNumber: roomNumberInput.value || '',
+                    wardNumber: wardNumberSelect.options[wardNumberSelect.selectedIndex]?.value || '',
+                    totalPrice: parseFloat(totalPriceElement.textContent.replace(/\D/g, '')) || 0,
+                };
+    
+                fetch('/directions/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(directionData),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert('Направление успешно сохранено!');
+                        window.location.href = 'patients.html';
+                    })
+                    .catch(err => {
+                        alert('Ошибка при сохранении направления.');
+                        console.error(err);
+                    });
+            });
+    
+            cancelDirectionButton.addEventListener('click', function () {
+                window.location.href = 'patients.html';
+            });
         });
     </script>
-        
-        
-        
-        
-        
         
 </body>
 </html>

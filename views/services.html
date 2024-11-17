@@ -126,216 +126,194 @@
     </div>
     
     <script>
-    let selectedServiceId = null;
-
-    // Открытие модальных окон для добавления пациента
-    document.getElementById('addServiceBtn').addEventListener('click', function() {
-        document.getElementById('addServiceModal').classList.add('show');
-        document.getElementById('overlay').classList.add('show');
-    });
-
-    // Открытие модальных окон для редактирования пациента
-    document.getElementById('editServiceBtn').addEventListener('click', function() {
-        if (!selectedServiceId) return;
-        fetch(`/services/${selectedServiceId}`)
-            .then(response => response.json())
-            .then(service => {
-                document.querySelector('#editServiceForm [name="serviceId"]').value = service._id;
-                document.querySelector('#editServiceForm [name="serviceName"]').value = service.serviceName;
-                document.querySelector('#editServiceForm [name="serviceType"]').value = service.serviceType;
-                document.querySelector('#editServiceForm [name="serviceAbout"]').value = service.serviceAbout;
-                document.querySelector('#editServiceForm [name="servicePrice"]').value = service.servicePrice;
-                document.getElementById('editServiceModal').classList.add('show');
-                document.getElementById('overlay').classList.add('show');
-            });
-    });
-
-    // Закрытие модальных окон при нажатии на overlay
-    document.getElementById('overlay').addEventListener('click', function() {
-        document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('show'));
-        document.getElementById('overlay').classList.remove('show');
-    });
-
-    // Закрытие модальных окон при нажатии кнопки "Отмена" или завершении действия
-    document.querySelectorAll('.btn-cancel').forEach(button => {
-        button.addEventListener('click', function() {
-            document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('show'));
-            document.getElementById('overlay').classList.remove('show');
+        let selectedServiceId = null;
+    
+        // Открытие модального окна для добавления услуги
+        document.getElementById('addServiceBtn').addEventListener('click', function () {
+            document.getElementById('addServiceModal').classList.add('show');
+            document.getElementById('overlay').classList.add('show');
         });
-    });
-
-    // Обработка добавления услуги
-    document.getElementById('addServiceForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        fetch('/services/add', {
-            method: 'POST',
-            body: new URLSearchParams(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert('Услуга успешно добавлен!');
-            document.getElementById('addServiceModal').classList.remove('show');
-            document.getElementById('overlay').classList.remove('show');
-            loadservices(); // Перезагрузка списка услуг после добавления
-        })
-        .catch(error => {
-            alert('Ошибка при добавлении услуги');
-            console.error(error);
-        });
-    });
-
-    // Обработчик события для поиска
-    document.getElementById('searchInput').addEventListener('input', function() {
-        const query = this.value.toLowerCase();
-        loadservices(query); // Передаем запрос в функцию загрузки услуг
-    });
-
-    // Обработка изменения услуги
-    document.getElementById('editServiceForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        fetch(`/services/edit/${formData.get('serviceId')}`, {
-            method: 'PUT',
-            body: new URLSearchParams(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert('Услуга успешно изменена!');
-            document.getElementById('editServiceModal').classList.remove('show');
-            document.getElementById('overlay').classList.remove('show');
-            loadservices();
-        })
-        .catch(error => {
-            alert('Ошибка при изменении услуги');
-            console.error(error);
-        });
-    });
-
-    // Удаление услуги
-    document.getElementById('deleteServiceBtn').addEventListener('click', function() {
-        if (!selectedServiceId) return;
-        if (confirm('Вы действительно хотите удалить услугу?')) {
-            fetch(`/services/delete/${selectedServiceId}`, { method: 'DELETE' })
+    
+        // Открытие модального окна для редактирования услуги
+        document.getElementById('editServiceBtn').addEventListener('click', function () {
+            if (!selectedServiceId) {
+                alert('Пожалуйста, выберите услугу для редактирования');
+                return;
+            }
+    
+            fetch(`/services/${selectedServiceId}`)
                 .then(response => response.json())
-                .then(data => {
-                    alert('Услуга удалена!');
-                    loadservices();
+                .then(service => {
+                    document.querySelector('#editServiceForm [name="serviceId"]').value = service._id;
+                    document.querySelector('#editServiceForm [name="serviceName"]').value = service.serviceName;
+                    document.querySelector('#editServiceForm [name="serviceType"]').value = service.serviceType;
+                    document.querySelector('#editServiceForm [name="serviceAbout"]').value = service.serviceAbout;
+                    document.querySelector('#editServiceForm [name="servicePrice"]').value = service.servicePrice;
+    
+                    document.getElementById('editServiceModal').classList.add('show');
+                    document.getElementById('overlay').classList.add('show');
                 })
                 .catch(error => {
-                    alert('Ошибка при удалении услуги');
+                    alert('Ошибка при загрузке данных услуги');
                     console.error(error);
                 });
+        });
+    
+        // Закрытие модальных окон
+        document.getElementById('overlay').addEventListener('click', closeModal);
+        document.querySelectorAll('.btn-cancel').forEach(button => button.addEventListener('click', closeModal));
+    
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('show'));
+            document.getElementById('overlay').classList.remove('show');
         }
-    });
-
-    // Функция для форматирования даты в нужный формат
-    function formatDate(date) {
-        const d = new Date(date);
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const year = d.getFullYear();
-        const hours = String(d.getHours()).padStart(2, '0');
-        const minutes = String(d.getMinutes()).padStart(2, '0');
-        const seconds = String(d.getSeconds()).padStart(2, '0');
-        return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
-    }
-
-    // Глобальные переменные для текущей страницы и количества записей на странице
-    let currentPage = 1;
-    const recordsPerPage = 15;
-
-    // Загрузка списка услуг с учетом пагинации
-    function loadservices(searchQuery = '', page = 1) {
-        fetch('/services/list')
-            .then(response => response.json())
-            .then(data => {
-                const servicesTableBody = document.getElementById('servicesTableBody');
-                servicesTableBody.innerHTML = '';
-
-                // Фильтрация данных на клиенте по запросу
-                const filteredservices = data.filter(service => {
-                    return (
-                        service.serviceName.toLowerCase().includes(searchQuery) ||
-                        service.serviceAbout.toLowerCase().includes(searchQuery) ||
-                        service.servicePrice.toLowerCase().includes(searchQuery) ||
-                        service.serviceType.toLowerCase().includes(searchQuery)
-                    );
+    
+        // Обработка добавления услуги
+        document.getElementById('addServiceForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/services/add', {
+                method: 'POST',
+                body: new URLSearchParams(formData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Услуга успешно добавлена!');
+                    closeModal();
+                    loadServices();
+                })
+                .catch(error => {
+                    alert('Ошибка при добавлении услуги');
+                    console.error(error);
                 });
-
-                // Определяем начало и конец текущей страницы
-                const startIndex = (page - 1) * recordsPerPage;
-                const endIndex = startIndex + recordsPerPage;
-                const servicesToShow = filteredservices.slice(startIndex, endIndex);
-
-                // Отображаем услуг на текущей странице
-                servicesToShow.forEach((service, index) => {
-                    const registrationDate = service.createdAt ? formatDate(service.createdAt) : 'Не указано';
-
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td><input type="checkbox" data-service-id="${service._id}"></td>
-                        <td>${startIndex + index + 1}</td>
-                        <td>${service.serviceName}</td>
-                        <td>${service.serviceType}</td>
-                        <td>${service.serviceAbout}</td>
-                        <td>${service.servicePrice} Сум</td>
-                        <td>${registrationDate}</td>
-                    `;
-                    servicesTableBody.appendChild(row);
+        });
+    
+        // Обработка изменения услуги
+        document.getElementById('editServiceForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch(`/services/edit/${formData.get('serviceId')}`, {
+                method: 'PUT',
+                body: new URLSearchParams(formData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Услуга успешно изменена!');
+                    closeModal();
+                    loadServices();
+                })
+                .catch(error => {
+                    alert('Ошибка при изменении услуги');
+                    console.error(error);
                 });
-
-                // Обновляем кнопки пагинации
-                updatePaginationButtons(filteredservices.length, page);
-            });
-    }
-
-    // Функция для обновления кнопок пагинации
-    function updatePaginationButtons(totalRecords, currentPage) {
-        const paginationContainer = document.getElementById('pagination');
-        paginationContainer.innerHTML = '';
-
-        const totalPages = Math.ceil(totalRecords / recordsPerPage);
-
-        for (let i = 1; i <= totalPages; i++) {
-            const pageButton = document.createElement('button');
-            pageButton.textContent = i;
-            pageButton.classList.add('page-btn');
-            if (i === currentPage) {
-                pageButton.classList.add('active');
+        });
+    
+        // Удаление услуги
+        document.getElementById('deleteServiceBtn').addEventListener('click', function () {
+            const selectedCheckboxes = document.querySelectorAll('#servicesTableBody input[type="checkbox"]:checked');
+            if (selectedCheckboxes.length === 0) {
+                alert('Пожалуйста, выберите хотя бы одну услугу для удаления');
+                return;
             }
-
-            pageButton.addEventListener('click', () => {
-                loadservices(document.getElementById('searchInput').value.toLowerCase(), i);
-            });
-
-            paginationContainer.appendChild(pageButton);
+    
+            if (confirm('Вы действительно хотите удалить выбранные услуги?')) {
+                const deletePromises = Array.from(selectedCheckboxes).map(checkbox => {
+                    const serviceId = checkbox.dataset.serviceId;
+                    return fetch(`/services/delete/${serviceId}`, { method: 'DELETE' });
+                });
+    
+                Promise.all(deletePromises)
+                    .then(responses => Promise.all(responses.map(response => response.json())))
+                    .then(data => {
+                        alert('Выбранные услуги успешно удалены!');
+                        loadServices();
+                    })
+                    .catch(error => {
+                        alert('Ошибка при удалении услуг');
+                        console.error(error);
+                    });
+            }
+        });
+    
+        // Обработка выбора услуг через чекбоксы
+        document.getElementById('servicesTableBody').addEventListener('click', function (e) {
+            if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
+                const selectedCheckboxes = document.querySelectorAll('#servicesTableBody input[type="checkbox"]:checked');
+                document.getElementById('deleteServiceBtn').disabled = selectedCheckboxes.length === 0;
+    
+                selectedServiceId = selectedCheckboxes.length === 1 ? selectedCheckboxes[0].dataset.serviceId : null;
+                document.getElementById('editServiceBtn').disabled = selectedCheckboxes.length !== 1;
+            }
+        });
+    
+        // Функция загрузки списка услуг
+        function loadServices(searchQuery = '', page = 1) {
+            fetch('/services/list')
+                .then(response => response.json())
+                .then(data => {
+                    const servicesTableBody = document.getElementById('servicesTableBody');
+                    servicesTableBody.innerHTML = '';
+    
+                    const filteredServices = data.filter(service => {
+                        return (
+                            service.serviceName.toLowerCase().includes(searchQuery) ||
+                            service.serviceType.toLowerCase().includes(searchQuery) ||
+                            service.serviceAbout.toLowerCase().includes(searchQuery)
+                        );
+                    });
+    
+                    const startIndex = (page - 1) * 15;
+                    const servicesToShow = filteredServices.slice(startIndex, startIndex + 15);
+    
+                    servicesToShow.forEach((service, index) => {
+                        const row = `
+                            <tr>
+                                <td><input type="checkbox" data-service-id="${service._id}"></td>
+                                <td>${startIndex + index + 1}</td>
+                                <td>${service.serviceName}</td>
+                                <td>${service.serviceType}</td>
+                                <td>${service.serviceAbout}</td>
+                                <td>${service.servicePrice}</td>
+                                <td>${new Date(service.createdAt).toLocaleString()}</td>
+                            </tr>`;
+                        servicesTableBody.insertAdjacentHTML('beforeend', row);
+                    });
+    
+                    updatePaginationButtons(filteredServices.length, page);
+                });
         }
-    }
-
-    // Инициализация загрузки услуг при загрузке страницы
-    loadservices();
-
-    // Обработчик события для поиска
-    document.getElementById('searchInput').addEventListener('input', function() {
-        const query = this.value.toLowerCase();
-        currentPage = 1; // Сбрасываем текущую страницу при поиске
-        loadservices(query, currentPage);
-    });
-
-
-    // Загрузка списка услуг при открытии страницы
-    loadservices();
-
-    // Обработка выбора услуг через чекбоксы
-    document.getElementById('servicesTableBody').addEventListener('click', function(e) {
-        if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
-            selectedServiceId = e.target.dataset.serviceId;
-            document.getElementById('editServiceBtn').disabled = !selectedServiceId;
-            document.getElementById('deleteServiceBtn').disabled = !selectedServiceId;
+    
+        // Функция обновления кнопок пагинации
+        function updatePaginationButtons(totalRecords, currentPage) {
+            const paginationContainer = document.getElementById('pagination');
+            paginationContainer.innerHTML = '';
+            const totalPages = Math.ceil(totalRecords / 15);
+    
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.classList.add('page-btn');
+                if (i === currentPage) pageButton.classList.add('active');
+                pageButton.addEventListener('click', () => loadServices('', i));
+                paginationContainer.appendChild(pageButton);
+            }
         }
-    });
-    </script>   
+    
+        // Инициализация
+        loadServices();
+        document.getElementById('searchInput').addEventListener('input', function () {
+            const query = this.value.toLowerCase();
+            loadServices(query, 1);
+        });
+    
+        document.getElementById('selectAll').addEventListener('change', function () {
+            const checkboxes = document.querySelectorAll('#servicesTableBody input[type="checkbox"]');
+            checkboxes.forEach(checkbox => (checkbox.checked = this.checked));
+            document.getElementById('deleteServiceBtn').disabled = !this.checked;
+        });
+    </script>
+    
+      
 
 </body>
 </html>

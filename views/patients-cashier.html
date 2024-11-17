@@ -35,9 +35,11 @@
                 <div class="actions">
                     <div class="action-buttons">
                         <button id="payButton" disabled>Оплатить</button>
+                        <button id="printButton" disabled>Печать</button>
+                        <button id="deleteButton" disabled>Удалить</button>
                     </div>
                     <input type="text" id="searchInput" placeholder="Поиск по ФИО, паспорту, телефону" class="search-input">
-                </div>
+                </div>                
 
                 <!-- Таблица пациентов -->
                 <div class="table-wrapper">
@@ -52,11 +54,13 @@
                                 <th>Телефон</th>
                                 <th>Наименование услуги</th>
                                 <th>ФИО врача</th>
+                                <th>Кабинет врача</th>
                                 <th>Палата</th>
                                 <th>Цена</th>
                                 <th>Статус оплаты</th>
                             </tr>
                         </thead>
+                        
                         <tbody id="patientsTableBody">
                             <!-- Данные будут вставляться динамически -->
                         </tbody>
@@ -69,118 +73,185 @@
     </div>
 
     <script>
-        let selectedPatientId = null;
-
-        // Загрузка списка пациентов с услугами из базы данных
-        function loadPatients(searchQuery = '', page = 1) {
-            fetch('/patients/get-directions') // Получаем данные направлений
-                .then(response => response.json())
-                .then(data => {
-                    const patientsTableBody = document.getElementById('patientsTableBody');
-                    patientsTableBody.innerHTML = '';
-
-                    // Фильтрация данных по запросу
-                    const filteredPatients = data.filter(patient => {
-                        return (
-                            patient.fullName.toLowerCase().includes(searchQuery) ||
-                            patient.passport.toLowerCase().includes(searchQuery) ||
-                            patient.phone.toLowerCase().includes(searchQuery)
-                        );
-                    });
-
-                    // Определяем начало и конец текущей страницы
-                    const startIndex = (page - 1) * 10;
-                    const endIndex = startIndex + 10;
-                    const patientsToShow = filteredPatients.slice(startIndex, endIndex);
-
-                    // Заполнение таблицы данными
-                    patientsToShow.forEach((patient, index) => {
-                        const paymentStatus = patient.paid ? 'Оплачено' : 'Не оплачено';
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td><input type="checkbox" data-patient-id="${patient._id}"></td>
-                            <td>${startIndex + index + 1}</td>
-                            <td>${patient.fullName}</td>
-                            <td>${new Date(patient.birthDate).toLocaleDateString()}</td>
-                            <td>${patient.passport}</td>
-                            <td>${patient.phone}</td>
-                            <td>${patient.serviceName}</td>
-                            <td>${patient.doctorName}</td>
-                            <td>${patient.servicePrice} UZS</td>
-                            <td>${paymentStatus}</td>
-                            <td><button class="payBtn" data-patient-id="${patient._id}">${paymentStatus === 'Не оплачено' ? 'Оплатить' : 'Оплачено'}</button></td>
-                        `;
-                        patientsTableBody.appendChild(row);
-                    });
-
-                    // Обновление пагинации
-                    updatePaginationButtons(filteredPatients.length, page);
-
-                    // Добавление обработчика на кнопки "Оплатить"
-                    document.querySelectorAll('.payBtn').forEach(button => {
-                        button.addEventListener('click', function() {
-                            const patientId = button.dataset.patientId;
-                            payForService(patientId); // Оплата услуги
-                        });
-                    });
-                });
-        }
-
-        // Функция для обновления кнопок пагинации
-        function updatePaginationButtons(totalRecords, currentPage) {
-            const paginationContainer = document.getElementById('pagination');
-            paginationContainer.innerHTML = '';
-
-            const totalPages = Math.ceil(totalRecords / 10);
-
-            for (let i = 1; i <= totalPages; i++) {
-                const pageButton = document.createElement('button');
-                pageButton.textContent = i;
-                pageButton.classList.add('page-btn');
-                if (i === currentPage) {
-                    pageButton.classList.add('active');
-                }
-
-                pageButton.addEventListener('click', () => {
-                    loadPatients(document.getElementById('searchInput').value.toLowerCase(), i);
-                });
-
-                paginationContainer.appendChild(pageButton);
-            }
-        }
-
-        // Функция для оплаты услуги
-        function payForService(patientId) {
-            if (confirm('Вы уверены, что хотите провести оплату?')) {
-                fetch(`/patients/pay/${patientId}`, { method: 'POST' })
+        document.addEventListener("DOMContentLoaded", function () {
+            const patientsTableBody = document.getElementById('patientsTableBody');
+            const searchInput = document.getElementById('searchInput');
+            const payButton = document.getElementById('payButton');
+            const printButton = document.getElementById('printButton');
+            let selectedDirectionId = null;
+    
+            // Загрузка направлений с сервера
+            function loadPatients(searchQuery = '') {
+                fetch('/cashier/directions')
                     .then(response => response.json())
                     .then(data => {
-                        alert('Оплата успешно проведена!');
-                        loadPatients(); // Перезагрузка списка после оплаты
+                        if (!Array.isArray(data) || data.length === 0) {
+                            patientsTableBody.innerHTML = '<tr><td colspan="12">Данные отсутствуют</td></tr>';
+                            return;
+                        }
+    
+                        const filteredPatients = data.filter(direction => {
+                            const patient = direction.patientId || {};
+                            return (
+                                (patient.fullName || '').toLowerCase().includes(searchQuery) ||
+                                (patient.passport || '').toLowerCase().includes(searchQuery) ||
+                                (patient.phone || '').toLowerCase().includes(searchQuery)
+                            );
+                        });
+    
+                        displayPatients(filteredPatients);
                     })
                     .catch(error => {
-                        alert('Ошибка при оплате');
-                        console.error(error);
+                        console.error('Ошибка при загрузке данных:', error);
+                        patientsTableBody.innerHTML = '<tr><td colspan="12">Ошибка при загрузке данных</td></tr>';
                     });
             }
-        }
-
-        // Обработчик события для поиска
-        document.getElementById('searchInput').addEventListener('input', function() {
-            const query = this.value.toLowerCase();
-            loadPatients(query); // Загружаем пациентов с фильтрацией
-        });
-
-        // Инициализация загрузки пациентов при загрузке страницы
-        loadPatients();
-
-        // Обработчик события для выбора пациентов
-        document.getElementById('patientsTableBody').addEventListener('change', function(e) {
-            if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
-                selectedPatientId = e.target.dataset.patientId;
-                document.getElementById('payButton').disabled = !selectedPatientId;
+    
+            // Отображение данных в таблице
+            function displayPatients(directions) {
+                patientsTableBody.innerHTML = '';
+                directions.forEach((direction, index) => {
+                    const patient = direction.patientId || {};
+                    const paymentStatus = direction.paid ? 'Оплачено' : 'Не оплачено';
+    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><input type="checkbox" data-direction-id="${direction._id}"></td>
+                        <td>${index + 1}</td>
+                        <td>${patient.fullName || 'Не указано'}</td>
+                        <td>${patient.birthDate ? new Date(patient.birthDate).toLocaleDateString() : 'Не указано'}</td>
+                        <td>${patient.passport || 'Не указано'}</td>
+                        <td>${patient.phone || 'Не указано'}</td>
+                        <td>${direction.serviceName || 'Не указано'}</td>
+                        <td>${direction.doctorName || 'Не указано'}</td>
+                        <td>${direction.roomNumber || 'Не указано'}</td>
+                        <td>${direction.wardNumber || 'Не указано'}</td>
+                        <td>${direction.totalPrice || 0} Сум</td>
+                        <td>${paymentStatus}</td>
+                    `;
+                    patientsTableBody.appendChild(row);
+                });
+    
+                // Обновление состояния кнопок при выборе направления
+                document.querySelectorAll('#patientsTableBody input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.addEventListener('change', function () {
+                        selectedDirectionId = this.dataset.directionId;
+                        payButton.disabled = !selectedDirectionId;
+                        printButton.disabled = !selectedDirectionId;
+                    });
+                });
             }
+    
+            // Оплата направления
+            function payForSelectedPatient() {
+                if (!selectedDirectionId) {
+                    alert('Пожалуйста, выберите направление для оплаты.');
+                    return;
+                }
+    
+                if (!confirm('Вы уверены, что хотите провести оплату?')) return;
+    
+                fetch(`/cashier/directions/pay/${selectedDirectionId}`, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message === 'Статус оплаты успешно обновлен') {
+                            alert('Оплата успешно проведена.');
+                            loadPatients();
+                        } else {
+                            alert('Не удалось обновить статус оплаты.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при оплате:', error);
+                        alert('Ошибка при выполнении операции оплаты.');
+                    });
+            }
+    
+            // Печать чека
+            function printReceipt() {
+                if (!selectedDirectionId) {
+                    alert('Пожалуйста, выберите направление для печати.');
+                    return;
+                }
+    
+                fetch(`/cashier/directions/${selectedDirectionId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Ошибка при загрузке данных для печати.');
+                        }
+                        return response.json();
+                    })
+                    .then(direction => {
+                        const patient = direction.patientId || {};
+                        const receiptText = `
+                            Revmatolog Odiljon Klinikasi
+                            ----------------------------
+                            ФИО пациента: ${patient.fullName || 'Не указано'}
+                            Дата: ${new Date().toLocaleDateString()}
+                            ----------------------------
+                            Услуга: ${direction.serviceName || 'Не указано'}
+                            Врач: ${direction.doctorName || 'Не указано'}
+                            Кабинет врача: ${direction.roomNumber || 'Не указано'}
+                            Номер палаты: ${direction.wardNumber || 'Не указано'}
+                            ----------------------------
+                            Общая сумма: ${direction.totalPrice || 0} Сум
+                        `;
+    
+                        const printWindow = window.open('', '_blank');
+                        printWindow.document.open();
+                        printWindow.document.write(`<pre style="font-size: 12px; font-family: monospace;">${receiptText}</pre>`);
+                        printWindow.document.close();
+                        printWindow.print();
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при печати:', error);
+                        alert('Ошибка при загрузке данных для печати.');
+                    });
+            }
+    
+            // Удаление направлений (пациентов-кассы)
+            document.getElementById('deleteButton').addEventListener('click', function () {
+                if (selectedDirectionIds.length === 0) {
+                    alert('Пожалуйста, выберите хотя бы одно направление для удаления.');
+                    return;
+                }
+
+                if (confirm('Вы действительно хотите удалить выбранные направления?')) {
+                    fetch('/directions/delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ids: selectedDirectionIds }),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            alert(data.message || 'Выбранные направления успешно удалены.');
+                            selectedDirectionIds = []; // Сброс выбранных направлений
+                            loadPatients(); // Обновление списка направлений
+                        })
+                        .catch(error => {
+                            alert('Ошибка при удалении направлений.');
+                            console.error('Ошибка:', error);
+                        });
+                }
+            });
+
+            // Инициализация событий
+            searchInput.addEventListener('input', function () {
+                const query = this.value.toLowerCase();
+                loadPatients(query);
+            });
+    
+            payButton.addEventListener('click', payForSelectedPatient);
+            printButton.addEventListener('click', printReceipt);
+    
+            // Загрузка направлений при инициализации
+            loadPatients();
         });
     </script>
+    
+    
+    
+    
+    
 </body>
 </html>

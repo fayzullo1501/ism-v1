@@ -21,6 +21,29 @@
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
+#payButton {
+    background-color: #e94949;
+    font-weight: 100;
+    color: white;
+}
+
+#payButton:hover {
+    background-color: #cb1f1f;
+    transform: scale(1.05);
+}
+
+#printButton {
+    background-color: #E6E9F0;
+    font-weight: 100;
+    color: #000;
+}
+
+#printButton:hover {
+    background-color: none;
+    transform: scale(1.05);
+}
+
+
 #addPatientBtn {
     background-color: #e94949;
     font-weight: 100;

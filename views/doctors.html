@@ -80,7 +80,9 @@
             </div>
             <div class="form-row">
                 <label for="specialty">Специальность:</label>
-                <input type="text" name="specialty" id="specialty" placeholder="Специальность" required>
+                <select name="specialty" id="specialty" required>
+                    <option value="" disabled selected>Выберите специальность</option>
+                </select>                
             </div>
             <div class="form-row">
                 <label for="room">Комната:</label>
@@ -120,7 +122,9 @@
             </div>
             <div class="form-row">
                 <label for="editSpecialty">Специальность:</label>
-                <input type="text" name="specialty" id="editSpecialty" placeholder="Специальность" required>
+                <select name="specialty" id="editSpecialty" required>
+                    <option value="" disabled selected>Выберите специальность</option>
+                </select>                
             </div>
             <div class="form-row">
                 <label for="editRoom">Комната:</label>
@@ -149,242 +153,221 @@
         </form>
     </div>
 
-    <script>
-        let selectedDoctorId = null;
-        // Открытие модальных окон для добавления врача
-        document.getElementById('addDoctorBtn').addEventListener('click', function() {
-            document.getElementById('addDoctorModal').classList.add('show');
-            document.getElementById('overlay').classList.add('show');
-        });
-
-        // Открытие модального окна для редактирования врача
-        document.getElementById('editDoctorBtn').addEventListener('click', function() {
-            if (!selectedDoctorId) {
-                alert('Пожалуйста, выберите врача для редактирования');
-                return;
+        <script>
+            let selectedDoctorId = null;
+        
+            // Открытие модального окна для добавления врача
+            document.getElementById('addDoctorBtn').addEventListener('click', function () {
+                loadSpecialties('specialty'); // Загрузка списка услуг для поля "specialty"
+                document.getElementById('addDoctorModal').classList.add('show');
+                document.getElementById('overlay').classList.add('show');
+            });
+        
+            // Функция загрузки списка услуг для выпадающего списка
+            function loadSpecialties(selectId) {
+                return fetch('/services/list')
+                    .then(response => response.json())
+                    .then(services => {
+                        const specialtySelect = document.getElementById(selectId);
+                        specialtySelect.innerHTML = '<option value="" disabled selected>Выберите специальность</option>';
+                        services.forEach(service => {
+                            const option = document.createElement('option');
+                            option.value = service.serviceName;
+                            option.textContent = service.serviceName;
+                            specialtySelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Ошибка при загрузке услуг:', error));
             }
-
-            // Получаем данные врача с сервера
-            fetch(`/doctors/${selectedDoctorId}`)
-                .then(response => response.json())
-                .then(doctor => {
-                    // Заполняем форму данными врача
-                    document.querySelector('#editDoctorForm [name="doctorId"]').value = doctor._id;
-                    document.querySelector('#editDoctorForm [name="fullName"]').value = doctor.fullName;
-                    document.querySelector('#editDoctorForm [name="specialty"]').value = doctor.specialty;
-                    document.querySelector('#editDoctorForm [name="room"]').value = doctor.room;
-                    document.querySelector('#editDoctorForm [name="phone"]').value = doctor.phone;
-                    document.querySelector('#editDoctorForm [name="address"]').value = doctor.address;
-                    document.querySelector('#editDoctorForm [name="passport"]').value = doctor.passport;
-                    document.querySelector('#editDoctorForm [name="birthDate"]').value = doctor.birthDate.split('T')[0];  // Дата в формате yyyy-mm-dd
-                    
-                    // Открываем модальное окно для редактирования
-                    document.getElementById('editDoctorModal').classList.add('show');
-                    document.getElementById('overlay').classList.add('show');
-                })
-                .catch(error => {
-                    alert('Ошибка при загрузке данных врача');
-                    console.error(error);
-                });
-        });
-
-        // Закрытие модальных окон при нажатии на overlay
-        document.getElementById('overlay').addEventListener('click', function() {
-            document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('show'));
-            document.getElementById('overlay').classList.remove('show');
-        });
-
-        // Закрытие модальных окон при нажатии кнопки "Отмена"
-        document.querySelectorAll('.btn-cancel').forEach(button => {
-            button.addEventListener('click', function() {
+        
+            // Открытие модального окна для редактирования врача
+            document.getElementById('editDoctorBtn').addEventListener('click', function () {
+                if (!selectedDoctorId) {
+                    alert('Пожалуйста, выберите врача для редактирования');
+                    return;
+                }
+        
+                // Загружаем данные врача и список услуг
+                fetch(`/doctors/${selectedDoctorId}`)
+                    .then(response => response.json())
+                    .then(doctor => {
+                        loadSpecialties('editSpecialty').then(() => {
+                            document.querySelector('#editDoctorForm [name="specialty"]').value = doctor.specialty;
+                        });
+        
+                        // Заполняем остальные поля
+                        document.querySelector('#editDoctorForm [name="doctorId"]').value = doctor._id;
+                        document.querySelector('#editDoctorForm [name="fullName"]').value = doctor.fullName;
+                        document.querySelector('#editDoctorForm [name="room"]').value = doctor.room;
+                        document.querySelector('#editDoctorForm [name="phone"]').value = doctor.phone;
+                        document.querySelector('#editDoctorForm [name="address"]').value = doctor.address;
+                        document.querySelector('#editDoctorForm [name="passport"]').value = doctor.passport;
+                        document.querySelector('#editDoctorForm [name="birthDate"]').value = doctor.birthDate.split('T')[0];
+        
+                        document.getElementById('editDoctorModal').classList.add('show');
+                        document.getElementById('overlay').classList.add('show');
+                    })
+                    .catch(error => {
+                        alert('Ошибка при загрузке данных врача');
+                        console.error(error);
+                    });
+            });
+        
+            // Закрытие модальных окон при нажатии на overlay
+            document.getElementById('overlay').addEventListener('click', closeModal);
+            document.querySelectorAll('.btn-cancel').forEach(button => button.addEventListener('click', closeModal));
+        
+            function closeModal() {
                 document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('show'));
                 document.getElementById('overlay').classList.remove('show');
-            });
-        });
-
-        // Обработка добавления врача
-        document.getElementById('addDoctorForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            fetch('/doctors/add', {
-                method: 'POST',
-                body: new URLSearchParams(formData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert('Врач успешно добавлен!');
-                document.getElementById('addDoctorModal').classList.remove('show');
-                document.getElementById('overlay').classList.remove('show');
-                loadDoctors(); // Перезагрузка списка врачей после добавления
-            })
-            .catch(error => {
-                alert('Ошибка при добавлении врача');
-                console.error(error);
-            });
-        });
-
-        // Обработка изменения врача
-        document.getElementById('editDoctorForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            fetch(`/doctors/edit/${formData.get('doctorId')}`, {
-                method: 'PUT',
-                body: new URLSearchParams(formData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert('Врач успешно изменен!');
-                document.getElementById('editDoctorModal').classList.remove('show');
-                document.getElementById('overlay').classList.remove('show');
-                loadDoctors();
-            })
-            .catch(error => {
-                alert('Ошибка при изменении врача');
-                console.error(error);
-            });
-        });
-
-        // Удаление врача
-        document.getElementById('deleteDoctorBtn').addEventListener('click', function() {
-            const selectedCheckboxes = document.querySelectorAll('#doctorsTableBody input[type="checkbox"]:checked');
-            if (selectedCheckboxes.length === 0) {
-                alert('Пожалуйста, выберите хотя бы одного врача для удаления');
-                return;
             }
-            
-            if (confirm('Вы действительно хотите удалить выбранных врачей?')) {
-                const deletePromises = Array.from(selectedCheckboxes).map(checkbox => {
-                    const doctorId = checkbox.dataset.doctorId;
-                    return fetch(`/doctors/delete/${doctorId}`, { method: 'DELETE' });
-                });
-
-                Promise.all(deletePromises)
-                    .then(responses => Promise.all(responses.map(response => response.json())))
+        
+            // Обработка добавления врача
+            document.getElementById('addDoctorForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                fetch('/doctors/add', {
+                    method: 'POST',
+                    body: new URLSearchParams(formData)
+                })
+                    .then(response => response.json())
                     .then(data => {
-                        alert('Выбранные врачи успешно удалены!');
+                        alert('Врач успешно добавлен!');
+                        closeModal();
                         loadDoctors();
                     })
                     .catch(error => {
-                        alert('Ошибка при удалении врачей');
+                        alert('Ошибка при добавлении врача');
                         console.error(error);
                     });
-            }
-        });
-
-        // Обработка события клика по чекбоксам в таблице врачей
-        document.getElementById('doctorsTableBody').addEventListener('click', function(e) {
-            if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
-                // Обновляем ID выбранного врача
-                selectedDoctorId = e.target.checked ? e.target.dataset.doctorId : null;
-
-                // Включаем или выключаем кнопку "Изменить" в зависимости от того, выбран ли врач
-                document.getElementById('editDoctorBtn').disabled = !selectedDoctorId;
-                document.getElementById('deleteDoctorBtn').disabled = !document.querySelector('#doctorsTableBody input[type="checkbox"]:checked');
-            }
-        });
-
-        // Глобальные переменные для текущей страницы и количества записей на странице
-        let currentPage = 1;
-        const recordsPerPage = 15;
-
-        // Загрузка списка врачей с учетом пагинации
-        function loadDoctors(searchQuery = '', page = 1) {
-            fetch('/doctors/list')
-                .then(response => response.json())
-                .then(data => {
-                    const doctorsTableBody = document.getElementById('doctorsTableBody');
-                    doctorsTableBody.innerHTML = '';
-
-                    // Фильтрация данных на клиенте по запросу
-                    const filteredDoctors = data.filter(doctor => {
-                        return (
-                            doctor.fullName.toLowerCase().includes(searchQuery) ||
-                            doctor.specialty.toLowerCase().includes(searchQuery) ||
-                            doctor.room.toLowerCase().includes(searchQuery) ||
-                            doctor.phone.toLowerCase().includes(searchQuery) ||
-                            doctor.address.toLowerCase().includes(searchQuery) ||
-                            doctor.passport.toLowerCase().includes(searchQuery)
-                        );
+            });
+        
+            // Обработка изменения врача
+            document.getElementById('editDoctorForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                fetch(`/doctors/edit/${formData.get('doctorId')}`, {
+                    method: 'PUT',
+                    body: new URLSearchParams(formData)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert('Врач успешно изменен!');
+                        closeModal();
+                        loadDoctors();
+                    })
+                    .catch(error => {
+                        alert('Ошибка при изменении врача');
+                        console.error(error);
                     });
-
-                    // Определяем начало и конец текущей страницы
-                    const startIndex = (page - 1) * recordsPerPage;
-                    const endIndex = startIndex + recordsPerPage;
-                    const doctorsToShow = filteredDoctors.slice(startIndex, endIndex);
-
-                    // Отображаем врачей на текущей странице
-                    doctorsToShow.forEach((doctor, index) => {
-                        const registrationDate = doctor.createdAt ? new Date(doctor.createdAt).toLocaleString('ru-RU', { 
-                            year: 'numeric', 
-                            month: '2-digit', 
-                            day: '2-digit', 
-                            hour: '2-digit', 
-                            minute: '2-digit', 
-                            second: '2-digit' 
-                        }) : 'Не указано';
-
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td><input type="checkbox" data-doctor-id="${doctor._id}"></td>
-                            <td>${startIndex + index + 1}</td>
-                            <td>${doctor.fullName}</td>
-                            <td>${doctor.specialty}</td>
-                            <td>${doctor.room}</td>
-                            <td>${doctor.phone}</td>
-                            <td>${doctor.address}</td>
-                            <td>${doctor.passport}</td>
-                            <td>${new Date(doctor.birthDate).toLocaleDateString()}</td>
-                            <td>${registrationDate}</td> <!-- Здесь теперь отображается дата с временем -->
-                        `;
-                        doctorsTableBody.appendChild(row);
-                    });
-
-                    // Обновляем кнопки пагинации
-                    updatePaginationButtons(filteredDoctors.length, page);
-                });
-        }
-
-        // Функция для обновления кнопок пагинации
-        function updatePaginationButtons(totalRecords, currentPage) {
-            const paginationContainer = document.getElementById('pagination');
-            paginationContainer.innerHTML = '';
-
-            const totalPages = Math.ceil(totalRecords / recordsPerPage);
-
-            for (let i = 1; i <= totalPages; i++) {
-                const pageButton = document.createElement('button');
-                pageButton.textContent = i;
-                pageButton.classList.add('page-btn');
-                if (i === currentPage) {
-                    pageButton.classList.add('active');
+            });
+        
+            // Удаление врача
+            document.getElementById('deleteDoctorBtn').addEventListener('click', function () {
+                const selectedCheckboxes = document.querySelectorAll('#doctorsTableBody input[type="checkbox"]:checked');
+                if (selectedCheckboxes.length === 0) {
+                    alert('Пожалуйста, выберите хотя бы одного врача для удаления');
+                    return;
                 }
-
-                pageButton.addEventListener('click', () => {
-                    loadDoctors(document.getElementById('searchInput').value.toLowerCase(), i);
-                });
-
-                paginationContainer.appendChild(pageButton);
-            }
-        }
-
-        // Ини циализация загрузки врачей при загрузке страницы
-                loadDoctors();
-
-                // Обработчик события для поиска
-                document.getElementById('searchInput').addEventListener('input', function() {
-                    const query = this.value.toLowerCase();
-                    currentPage = 1; // Сбрасываем текущую страницу при поиске
-                    loadDoctors(query, currentPage);
-                });
-
-                // Обработка события клика на общий чекбокс
-                document.getElementById('selectAll').addEventListener('change', function() {
-                    const checkboxes = document.querySelectorAll('#doctorsTableBody input[type="checkbox"]');
-                    checkboxes.forEach(checkbox => {
-                        checkbox.checked = this.checked; // Устанавливаем состояние чекбоксов в соответствии с общим чекбоксом
+        
+                if (confirm('Вы действительно хотите удалить выбранных врачей?')) {
+                    const deletePromises = Array.from(selectedCheckboxes).map(checkbox => {
+                        const doctorId = checkbox.dataset.doctorId;
+                        return fetch(`/doctors/delete/${doctorId}`, { method: 'DELETE' });
                     });
-                    document.getElementById('deleteDoctorBtn').disabled = !this.checked; // Включаем/выключаем кнопку удаления
-                });
-    </script>
+        
+                    Promise.all(deletePromises)
+                        .then(responses => Promise.all(responses.map(response => response.json())))
+                        .then(data => {
+                            alert('Выбранные врачи успешно удалены!');
+                            loadDoctors();
+                        })
+                        .catch(error => {
+                            alert('Ошибка при удалении врачей');
+                            console.error(error);
+                        });
+                }
+            });
+        
+            // Обработка события клика по чекбоксам в таблице врачей
+            document.getElementById('doctorsTableBody').addEventListener('click', function (e) {
+                if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
+                    selectedDoctorId = e.target.checked ? e.target.dataset.doctorId : null;
+                    document.getElementById('editDoctorBtn').disabled = !selectedDoctorId;
+                    document.getElementById('deleteDoctorBtn').disabled = !document.querySelector('#doctorsTableBody input[type="checkbox"]:checked');
+                }
+            });
+        
+            // Загрузка списка врачей
+            function loadDoctors(searchQuery = '', page = 1) {
+                fetch('/doctors/list')
+                    .then(response => response.json())
+                    .then(data => {
+                        const doctorsTableBody = document.getElementById('doctorsTableBody');
+                        doctorsTableBody.innerHTML = '';
+                        const filteredDoctors = data.filter(doctor => {
+                            return (
+                                doctor.fullName.toLowerCase().includes(searchQuery) ||
+                                doctor.specialty.toLowerCase().includes(searchQuery) ||
+                                doctor.room.toLowerCase().includes(searchQuery) ||
+                                doctor.phone.toLowerCase().includes(searchQuery) ||
+                                doctor.address.toLowerCase().includes(searchQuery) ||
+                                doctor.passport.toLowerCase().includes(searchQuery)
+                            );
+                        });
+        
+                        const startIndex = (page - 1) * 15;
+                        const doctorsToShow = filteredDoctors.slice(startIndex, startIndex + 15);
+        
+                        doctorsToShow.forEach((doctor, index) => {
+                            const row = `
+                                <tr>
+                                    <td><input type="checkbox" data-doctor-id="${doctor._id}"></td>
+                                    <td>${startIndex + index + 1}</td>
+                                    <td>${doctor.fullName}</td>
+                                    <td>${doctor.specialty}</td>
+                                    <td>${doctor.room}</td>
+                                    <td>${doctor.phone}</td>
+                                    <td>${doctor.address}</td>
+                                    <td>${doctor.passport}</td>
+                                    <td>${new Date(doctor.birthDate).toLocaleDateString()}</td>
+                                    <td>${new Date(doctor.createdAt).toLocaleString()}</td>
+                                </tr>`;
+                            doctorsTableBody.insertAdjacentHTML('beforeend', row);
+                        });
+        
+                        updatePaginationButtons(filteredDoctors.length, page);
+                    });
+            }
+        
+            // Обновление кнопок пагинации
+            function updatePaginationButtons(totalRecords, currentPage) {
+                const paginationContainer = document.getElementById('pagination');
+                paginationContainer.innerHTML = '';
+                const totalPages = Math.ceil(totalRecords / 15);
+        
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageButton = document.createElement('button');
+                    pageButton.textContent = i;
+                    pageButton.classList.add('page-btn');
+                    if (i === currentPage) pageButton.classList.add('active');
+                    pageButton.addEventListener('click', () => loadDoctors('', i));
+                    paginationContainer.appendChild(pageButton);
+                }
+            }
+        
+            // Инициализация
+            loadDoctors();
+            document.getElementById('searchInput').addEventListener('input', function () {
+                const query = this.value.toLowerCase();
+                loadDoctors(query, 1);
+            });
+            document.getElementById('selectAll').addEventListener('change', function () {
+                const checkboxes = document.querySelectorAll('#doctorsTableBody input[type="checkbox"]');
+                checkboxes.forEach(checkbox => (checkbox.checked = this.checked));
+                document.getElementById('deleteDoctorBtn').disabled = !this.checked;
+            });
+        </script>
+    
 </body>
 </html>
