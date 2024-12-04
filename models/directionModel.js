@@ -10,6 +10,7 @@ const directionSchema = new mongoose.Schema({
     wardCapacity: { type: Number, default: 1 },
     totalPrice: { type: Number, default: 0 },
     paid: { type: Boolean, default: false }, // Статус оплаты
+    isInLaboratory: { type: Boolean, default: false }, // Новое поле
     createdAt: { type: Date, default: Date.now }
 });
 

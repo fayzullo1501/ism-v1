@@ -9,6 +9,7 @@ const wardRoutes = require('./routes/ward'); // Маршрут для палат
 const doctorRoutes = require('./routes/doctor'); // Маршрут для врачей
 const directionRoutes = require('./routes/direction');
 const cashierRoutes = require('./routes/cashier');
+const laboratoryRoutes = require('./routes/laboratory');
 
 const app = express();
 const PORT = 3000;
@@ -32,6 +33,7 @@ app.get('/', (req, res) => {
 // Используем маршруты авторизации, пациентов, услуг, палат и врачей
 app.use(authRoutes);
 app.use('/cashier', cashierRoutes);
+app.use('/laboratory', laboratoryRoutes);
 app.use('/patients', patientRoutes);
 app.use('/directions', directionRoutes);
 app.use('/services', serviceRoutes); // Подключение маршрута для услуг

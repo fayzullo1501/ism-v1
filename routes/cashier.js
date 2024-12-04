@@ -14,4 +14,8 @@ router.get('/directions/:id', cashierController.getDirectionById);
 // Удалить выбранные направления
 router.post('/directions/delete', cashierController.deleteDirections);
 
+// Маршрут для отправки в лабораторию
+router.post('/directions/laboratory', cashierController.sendToLaboratory);
+
+
 module.exports = router;

@@ -78,9 +78,13 @@
             const searchInput = document.getElementById('searchInput');
             const payButton = document.getElementById('payButton');
             const printButton = document.getElementById('printButton');
-            let selectedDirectionId = null;
+            const deleteButton = document.getElementById('deleteButton');
+            const selectAllCheckbox = document.getElementById('selectAll');
+            let selectedDirectionIds = [];
+            let selectedDirectionId = null; // Для кнопок "Оплатить" и "Печать"
+            let selectedDirectionPaid = false; // Для проверки статуса оплаты
     
-            // Загрузка направлений с сервера
+            // Загрузка данных о пациентах
             function loadPatients(searchQuery = '') {
                 fetch('/cashier/directions')
                     .then(response => response.json())
@@ -110,13 +114,17 @@
             // Отображение данных в таблице
             function displayPatients(directions) {
                 patientsTableBody.innerHTML = '';
+                selectedDirectionIds = [];
+                selectedDirectionId = null;
+                selectedDirectionPaid = false;
+    
                 directions.forEach((direction, index) => {
                     const patient = direction.patientId || {};
                     const paymentStatus = direction.paid ? 'Оплачено' : 'Не оплачено';
     
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td><input type="checkbox" data-direction-id="${direction._id}"></td>
+                        <td><input type="checkbox" class="rowCheckbox" data-direction-id="${direction._id}" data-paid="${direction.paid}"></td>
                         <td>${index + 1}</td>
                         <td>${patient.fullName || 'Не указано'}</td>
                         <td>${patient.birthDate ? new Date(patient.birthDate).toLocaleDateString() : 'Не указано'}</td>
@@ -132,45 +140,127 @@
                     patientsTableBody.appendChild(row);
                 });
     
-                // Обновление состояния кнопок при выборе направления
-                document.querySelectorAll('#patientsTableBody input[type="checkbox"]').forEach(checkbox => {
+                attachCheckboxEvents();
+            }
+    
+            // Обработка чекбоксов
+            function attachCheckboxEvents() {
+                const rowCheckboxes = document.querySelectorAll('.rowCheckbox');
+    
+                rowCheckboxes.forEach(checkbox => {
                     checkbox.addEventListener('change', function () {
-                        selectedDirectionId = this.dataset.directionId;
-                        payButton.disabled = !selectedDirectionId;
-                        printButton.disabled = !selectedDirectionId;
+                        const directionId = this.dataset.directionId;
+                        const paidStatus = this.dataset.paid === 'true'; // Проверяем, оплачено ли направление
+    
+                        if (this.checked) {
+                            selectedDirectionIds.push(directionId);
+                            selectedDirectionId = directionId; // Обновляем выбранное направление
+                            selectedDirectionPaid = paidStatus; // Обновляем статус оплаты
+                        } else {
+                            selectedDirectionIds = selectedDirectionIds.filter(id => id !== directionId);
+                            if (selectedDirectionId === directionId) {
+                                selectedDirectionId = null;
+                                selectedDirectionPaid = false;
+                            }
+                        }
+    
+                        updateSelectAllCheckbox();
+                        updateButtonsState();
                     });
+                });
+    
+                // Общий чекбокс
+                selectAllCheckbox.addEventListener('change', function () {
+                    rowCheckboxes.forEach(checkbox => {
+                        checkbox.checked = selectAllCheckbox.checked;
+                        const directionId = checkbox.dataset.directionId;
+                        const paidStatus = checkbox.dataset.paid === 'true';
+    
+                        if (checkbox.checked && !selectedDirectionIds.includes(directionId)) {
+                            selectedDirectionIds.push(directionId);
+                        } else if (!checkbox.checked) {
+                            selectedDirectionIds = selectedDirectionIds.filter(id => id !== directionId);
+                        }
+    
+                        if (checkbox.checked) {
+                            selectedDirectionId = directionId; // Обновляем последний выбранный ID
+                            selectedDirectionPaid = paidStatus; // Устанавливаем статус оплаты
+                        }
+                    });
+    
+                    updateButtonsState();
                 });
             }
     
+            // Обновление состояния общего чекбокса
+            function updateSelectAllCheckbox() {
+                const rowCheckboxes = document.querySelectorAll('.rowCheckbox');
+                const allChecked = Array.from(rowCheckboxes).every(checkbox => checkbox.checked);
+                const someChecked = Array.from(rowCheckboxes).some(checkbox => checkbox.checked);
+    
+                selectAllCheckbox.checked = allChecked;
+                selectAllCheckbox.indeterminate = !allChecked && someChecked;
+            }
+    
+            // Обновление кнопок
+            function updateButtonsState() {
+                deleteButton.disabled = selectedDirectionIds.length === 0;
+                payButton.disabled = selectedDirectionIds.length !== 1;
+                printButton.disabled = !(selectedDirectionIds.length === 1 && selectedDirectionPaid); // Печать только для оплаченных направлений
+            }
+    
             // Оплата направления
-            function payForSelectedPatient() {
+            payButton.addEventListener('click', function () {
                 if (!selectedDirectionId) {
                     alert('Пожалуйста, выберите направление для оплаты.');
                     return;
                 }
-    
-                if (!confirm('Вы уверены, что хотите провести оплату?')) return;
-    
-                fetch(`/cashier/directions/pay/${selectedDirectionId}`, { method: 'POST' })
+
+                if (confirm('Вы уверены, что хотите провести оплату?')) {
+                    fetch(`/cashier/directions/pay/${selectedDirectionId}`, { method: 'POST' })
+                        .then(response => response.json())
+                        .then(data => {
+                            alert(data.message || 'Оплата успешно проведена.');
+
+                            // Проверка категории услуги
+                            const selectedDirection = data.direction; // Предполагаем, что направление возвращается с сервера
+                            const directionCategory = selectedDirection.serviceCategory || ''; // Категория услуги
+
+                            if (directionCategory.toLowerCase() === 'лаборатория' || directionCategory.toLowerCase() === 'laboratoriya') {
+                                sendToLaboratory(selectedDirectionId);
+                            }
+
+                            loadPatients();
+                        })
+                        .catch(error => {
+                            console.error('Ошибка при оплате:', error);
+                            alert('Ошибка при выполнении операции оплаты.');
+                        });
+                }
+            });
+
+            // Отправка направления в лабораторию
+            function sendToLaboratory(directionId) {
+                fetch(`/cashier/directions/laboratory`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ directionId }),
+                })
                     .then(response => response.json())
                     .then(data => {
-                        if (data.message === 'Статус оплаты успешно обновлен') {
-                            alert('Оплата успешно проведена.');
-                            loadPatients();
-                        } else {
-                            alert('Не удалось обновить статус оплаты.');
-                        }
+                        alert(data.message || 'Направление успешно отправлено в лабораторию.');
                     })
                     .catch(error => {
-                        console.error('Ошибка при оплате:', error);
-                        alert('Ошибка при выполнении операции оплаты.');
+                        console.error('Ошибка при отправке в лабораторию:', error);
+                        alert('Ошибка при выполнении операции.');
                     });
             }
+
     
             // Печать чека
-            function printReceipt() {
-                if (!selectedDirectionId) {
-                    alert('Пожалуйста, выберите направление для печати.');
+            printButton.addEventListener('click', function () {
+                if (!selectedDirectionId || !selectedDirectionPaid) {
+                    alert('Печать возможна только для оплаченных направлений.');
                     return;
                 }
     
@@ -207,17 +297,17 @@
                         console.error('Ошибка при печати:', error);
                         alert('Ошибка при загрузке данных для печати.');
                     });
-            }
+            });
     
-            // Удаление направлений (пациентов-кассы)
-            document.getElementById('deleteButton').addEventListener('click', function () {
+            // Удаление направлений
+            deleteButton.addEventListener('click', function () {
                 if (selectedDirectionIds.length === 0) {
                     alert('Пожалуйста, выберите хотя бы одно направление для удаления.');
                     return;
                 }
-
+    
                 if (confirm('Вы действительно хотите удалить выбранные направления?')) {
-                    fetch('/directions/delete', {
+                    fetch('/cashier/directions/delete', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ ids: selectedDirectionIds }),
@@ -225,29 +315,25 @@
                         .then(response => response.json())
                         .then(data => {
                             alert(data.message || 'Выбранные направления успешно удалены.');
-                            selectedDirectionIds = []; // Сброс выбранных направлений
-                            loadPatients(); // Обновление списка направлений
+                            loadPatients();
                         })
                         .catch(error => {
+                            console.error('Ошибка при удалении направлений:', error);
                             alert('Ошибка при удалении направлений.');
-                            console.error('Ошибка:', error);
                         });
                 }
             });
-
-            // Инициализация событий
+    
+            // Загрузка направлений при инициализации
             searchInput.addEventListener('input', function () {
                 const query = this.value.toLowerCase();
                 loadPatients(query);
             });
     
-            payButton.addEventListener('click', payForSelectedPatient);
-            printButton.addEventListener('click', printReceipt);
-    
-            // Загрузка направлений при инициализации
             loadPatients();
         });
     </script>
+    
     
     
     
