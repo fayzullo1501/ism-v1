@@ -1,3 +1,4 @@
+const Laboratory = require('../models/laboratoryModel');
 const Direction = require('../models/directionModel');
 
 // Получить направления для кассы
@@ -5,7 +6,8 @@ exports.getDirectionsForCashier = async (req, res) => {
     try {
         const directions = await Direction.find()
             .populate('patientId', 'fullName birthDate passport phone')
-            .sort({ createdAt: -1 });
+            .select('serviceName serviceType doctorName roomNumber wardNumber totalPrice paid updatedAt') // Добавлено serviceType и updatedAt
+            .sort({ updatedAt: -1, _id: -1 });
 
         if (!directions || directions.length === 0) {
             return res.status(200).json({ message: 'Направления отсутствуют', directions: [] });
@@ -37,7 +39,7 @@ exports.getDirectionById = async (req, res) => {
     }
 };
 
-// Обновить статус оплаты и автоматически отправить в лабораторию, если категория "Лаборатория"
+// Обновить статус оплаты
 exports.updatePaymentStatus = async (req, res) => {
     try {
         const { id } = req.params;
@@ -50,12 +52,7 @@ exports.updatePaymentStatus = async (req, res) => {
 
         // Обновляем статус оплаты
         direction.paid = true;
-
-        // Проверяем категорию услуги
-        if (direction.serviceCategory && 
-            (direction.serviceCategory.toLowerCase() === 'лаборатория' || direction.serviceCategory.toLowerCase() === 'laboratoriya')) {
-            direction.isInLaboratory = true; // Помечаем как "в лаборатории"
-        }
+        direction.updatedAt = new Date(); // Обновляем дату изменения
 
         const updatedDirection = await direction.save();
 
@@ -72,12 +69,12 @@ exports.updatePaymentStatus = async (req, res) => {
 // Создать новое направление (если необходимо)
 exports.createDirection = async (req, res) => {
     try {
-        const { patientId, serviceName, serviceCategory, doctorName, roomNumber, wardNumber, totalPrice } = req.body;
+        const { patientId, serviceName, serviceType, doctorName, roomNumber, wardNumber, totalPrice } = req.body;
 
         const newDirection = new Direction({
             patientId,
             serviceName,
-            serviceCategory,
+            serviceType,
             doctorName,
             roomNumber,
             wardNumber,
@@ -134,32 +131,39 @@ exports.deleteDirections = async (req, res) => {
     }
 };
 
-// Отправить направление в лабораторию (по запросу)
+// Отправка в лабораторию
 exports.sendToLaboratory = async (req, res) => {
-    const { directionId } = req.body;
-
     try {
-        const direction = await Direction.findById(directionId);
+        const { ids } = req.body;
 
-        if (!direction) {
-            return res.status(404).json({ message: 'Направление не найдено.' });
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ message: 'Не выбраны направления для отправки.' });
         }
 
-        // Проверяем категорию услуги
-        if (direction.serviceCategory.toLowerCase() !== 'лаборатория' && direction.serviceCategory.toLowerCase() !== 'laboratoriya') {
-            return res.status(400).json({ message: 'Категория услуги не является лабораторией.' });
+        // Находим направления по переданным ID
+        const directions = await Direction.find({ _id: { $in: ids } });
+
+        if (directions.length === 0) {
+            return res.status(404).json({ message: 'Направления не найдены.' });
         }
 
-        // Помечаем направление как "в лаборатории"
-        direction.isInLaboratory = true; // Поле должно быть добавлено в схему
-        await direction.save();
+        // Копируем данные в коллекцию лаборатории
+        const laboratoryDirections = directions.map(direction => ({
+            patientId: direction.patientId,
+            serviceName: direction.serviceName,
+            serviceType: direction.serviceType,
+            doctorName: direction.doctorName,
+            roomNumber: direction.roomNumber,
+            wardNumber: direction.wardNumber,
+            totalPrice: direction.totalPrice,
+        }));
 
-        res.status(200).json({
-            message: 'Направление успешно отправлено в лабораторию.',
-            direction,
-        });
+        await Laboratory.insertMany(laboratoryDirections);
+
+        res.status(200).json({ message: 'Направления успешно отправлены в лабораторию.' });
     } catch (error) {
-        console.error('Ошибка при отправке направления в лабораторию:', error);
-        res.status(500).json({ message: 'Ошибка сервера', error });
+        console.error('Ошибка при отправке данных в лабораторию:', error);
+        res.status(500).json({ message: 'Ошибка сервера.' });
     }
 };
+

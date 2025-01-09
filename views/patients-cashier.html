@@ -37,6 +37,7 @@
                         <button id="payButton" disabled>Оплатить</button>
                         <button id="printButton" disabled>Печать</button>
                         <button id="deleteButton" disabled>Удалить</button>
+                        <button id="sendToLaboratoryButton" disabled>Отправить в лабораторию</button>
                     </div>
                     <input type="text" id="searchInput" placeholder="Поиск по ФИО, паспорту, телефону" class="search-input">
                 </div>                
@@ -53,10 +54,12 @@
                                 <th>Паспортные данные</th>
                                 <th>Телефон</th>
                                 <th>Наименование услуги</th>
+                                <th>Категория услуги</th>
                                 <th>ФИО врача</th>
                                 <th>Кабинет врача</th>
                                 <th>Палата</th>
                                 <th>Цена</th>
+                                <th>Дата обновления</th>
                                 <th>Статус оплаты</th>
                             </tr>
                         </thead>
@@ -111,17 +114,50 @@
                     });
             }
     
+            // Получаем элемент кнопки "Отправить в лабораторию"
+            const sendToLaboratoryButton = document.getElementById('sendToLaboratoryButton');
+
+            // Добавляем обработчик события нажатия на кнопку
+            sendToLaboratoryButton.addEventListener('click', function () {
+                // Проверяем, выбраны ли направления для отправки
+                if (selectedDirectionIds.length === 0) {
+                    alert('Пожалуйста, выберите хотя бы одно направление для отправки в лабораторию.');
+                    return;
+                }
+
+                // Подтверждение действия перед отправкой
+                if (confirm('Вы уверены, что хотите отправить выбранные направления в лабораторию?')) {
+                    // Отправляем запрос на сервер для передачи данных в лабораторию
+                    fetch('/cashier/directions/laboratory', {
+                        method: 'POST', // HTTP-метод POST для отправки данных
+                        headers: { 'Content-Type': 'application/json' }, // Указываем тип данных JSON
+                        body: JSON.stringify({ ids: selectedDirectionIds }), // Отправляем массив ID выбранных направлений
+                    })
+                        .then(response => response.json()) // Обрабатываем ответ сервера как JSON
+                        .then(data => {
+                            // Сообщение об успешной отправке
+                            alert(data.message || 'Данные успешно отправлены в лабораторию.');
+                            loadPatients(); // Обновляем список направлений в таблице
+                        })
+                        .catch(error => {
+                            // Обработка ошибок при отправке
+                            console.error('Ошибка при отправке данных в лабораторию:', error);
+                            alert('Ошибка при выполнении операции.');
+                        });
+                }
+            });
+            
             // Отображение данных в таблице
             function displayPatients(directions) {
                 patientsTableBody.innerHTML = '';
                 selectedDirectionIds = [];
                 selectedDirectionId = null;
                 selectedDirectionPaid = false;
-    
+
                 directions.forEach((direction, index) => {
                     const patient = direction.patientId || {};
                     const paymentStatus = direction.paid ? 'Оплачено' : 'Не оплачено';
-    
+
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td><input type="checkbox" class="rowCheckbox" data-direction-id="${direction._id}" data-paid="${direction.paid}"></td>
@@ -131,15 +167,17 @@
                         <td>${patient.passport || 'Не указано'}</td>
                         <td>${patient.phone || 'Не указано'}</td>
                         <td>${direction.serviceName || 'Не указано'}</td>
+                        <td>${direction.serviceType || 'Не указано'}</td> <!-- Категория услуги -->
                         <td>${direction.doctorName || 'Не указано'}</td>
                         <td>${direction.roomNumber || 'Не указано'}</td>
                         <td>${direction.wardNumber || 'Не указано'}</td>
                         <td>${direction.totalPrice || 0} Сум</td>
+                        <td>${direction.updatedAt ? new Date(direction.updatedAt).toLocaleString('ru-RU') : 'Не указано'}</td>
                         <td>${paymentStatus}</td>
                     `;
                     patientsTableBody.appendChild(row);
                 });
-    
+
                 attachCheckboxEvents();
             }
     
@@ -206,9 +244,10 @@
             function updateButtonsState() {
                 deleteButton.disabled = selectedDirectionIds.length === 0;
                 payButton.disabled = selectedDirectionIds.length !== 1;
-                printButton.disabled = !(selectedDirectionIds.length === 1 && selectedDirectionPaid); // Печать только для оплаченных направлений
+                printButton.disabled = !(selectedDirectionIds.length === 1 && selectedDirectionPaid);
+                sendToLaboratoryButton.disabled = selectedDirectionIds.length === 0; // Активировать кнопку только если выбраны направления
             }
-    
+
             // Оплата направления
             payButton.addEventListener('click', function () {
                 if (!selectedDirectionId) {
@@ -221,16 +260,7 @@
                         .then(response => response.json())
                         .then(data => {
                             alert(data.message || 'Оплата успешно проведена.');
-
-                            // Проверка категории услуги
-                            const selectedDirection = data.direction; // Предполагаем, что направление возвращается с сервера
-                            const directionCategory = selectedDirection.serviceCategory || ''; // Категория услуги
-
-                            if (directionCategory.toLowerCase() === 'лаборатория' || directionCategory.toLowerCase() === 'laboratoriya') {
-                                sendToLaboratory(selectedDirectionId);
-                            }
-
-                            loadPatients();
+                            loadPatients(); // Обновляем список направлений
                         })
                         .catch(error => {
                             console.error('Ошибка при оплате:', error);
@@ -238,24 +268,6 @@
                         });
                 }
             });
-
-            // Отправка направления в лабораторию
-            function sendToLaboratory(directionId) {
-                fetch(`/cashier/directions/laboratory`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ directionId }),
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert(data.message || 'Направление успешно отправлено в лабораторию.');
-                    })
-                    .catch(error => {
-                        console.error('Ошибка при отправке в лабораторию:', error);
-                        alert('Ошибка при выполнении операции.');
-                    });
-            }
-
     
             // Печать чека
             printButton.addEventListener('click', function () {
@@ -324,6 +336,7 @@
                 }
             });
     
+            
             // Загрузка направлений при инициализации
             searchInput.addEventListener('input', function () {
                 const query = this.value.toLowerCase();
@@ -333,11 +346,6 @@
             loadPatients();
         });
     </script>
-    
-    
-    
-    
-    
     
 </body>
 </html>

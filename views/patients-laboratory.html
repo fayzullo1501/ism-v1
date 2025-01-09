@@ -36,7 +36,6 @@
                     <div class="action-buttons">
                         <button id="addResultButton" disabled>Добавить результат</button>
                         <button id="deleteButton" disabled>Удалить</button>
-                        <button id="sendToReceptionButton" disabled>Отправить в регистратуру</button>
                     </div>
                     <input type="text" id="searchInput" placeholder="Поиск по ФИО, паспорту, телефону" class="search-input">
                 </div>                
@@ -48,13 +47,14 @@
                             <tr>
                                 <th><input type="checkbox" id="selectAll"></th>
                                 <th>№</th>
-                                <th>ФИО пациента</th>
+                                <th>ФИО</th>
                                 <th>Дата рождения</th>
+                                <th>Паспортные данные</th>
                                 <th>Телефон</th>
                                 <th>Наименование услуги</th>
-                                <th>Результаты</th>
-                                <th>Статус</th>
-                                <th>Дата отправки</th> <!-- Новая колонка -->
+                                <th>Категория услуги</th>
+                                <th>Дата регистрации</th>
+                                <th>Результаты анализов</th>
                             </tr>
                         </thead>
                         
@@ -71,50 +71,151 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-    const laboratoryPatientsTable = document.getElementById('laboratoryPatientsTable');
+            const laboratoryPatientsTable = document.getElementById('laboratoryPatientsTable');
+            const searchInput = document.getElementById('searchInput');
+            const deleteButton = document.getElementById('deleteButton');
+            const selectAllCheckbox = document.getElementById('selectAll');
+            let laboratoryData = [];
+            let selectedPatientIds = [];
 
-    // Загрузка направлений лаборатории
-    function loadLaboratoryPatients() {
-        fetch('/laboratory/directions') // API для получения направлений
-            .then(response => response.json())
-            .then(data => {
-                if (!Array.isArray(data) || data.length === 0) {
-                    laboratoryPatientsTable.innerHTML = '<tr><td colspan="8">Данные отсутствуют</td></tr>';
+            // Загрузка направлений для лаборатории
+            function loadLaboratoryPatients(searchQuery = '') {
+                fetch('/laboratory/directions') // API для получения данных лаборатории
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!Array.isArray(data) || data.length === 0) {
+                            laboratoryPatientsTable.innerHTML = '<tr><td colspan="10">Данные отсутствуют</td></tr>';
+                            return;
+                        }
+
+                        laboratoryData = data; // Сохраняем данные для поиска
+                        displayLaboratoryPatients(
+                            data.filter(patient =>
+                                (patient.patientId.fullName || '').toLowerCase().includes(searchQuery) ||
+                                (patient.patientId.passport || '').toLowerCase().includes(searchQuery) ||
+                                (patient.patientId.phone || '').toLowerCase().includes(searchQuery)
+                            )
+                        );
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при загрузке данных лаборатории:', error);
+                        laboratoryPatientsTable.innerHTML = '<tr><td colspan="10">Ошибка при загрузке данных</td></tr>';
+                    });
+            }
+
+            // Отображение данных в таблице
+            function displayLaboratoryPatients(directions) {
+                laboratoryPatientsTable.innerHTML = ''; // Очищаем таблицу
+
+                directions.forEach((direction, index) => {
+                    const patient = direction.patientId || {};
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><input type="checkbox" class="rowCheckbox" data-id="${direction._id}"></td> <!-- Чекбокс для строки -->
+                        <td>${index + 1}</td>
+                        <td>${patient.fullName || 'Не указано'}</td>
+                        <td>${patient.birthDate ? new Date(patient.birthDate).toLocaleDateString() : 'Не указано'}</td>
+                        <td>${patient.passport || 'Не указано'}</td>
+                        <td>${patient.phone || 'Не указано'}</td>
+                        <td>${direction.serviceName || 'Не указано'}</td>
+                        <td>${direction.serviceType || 'Не указано'}</td>
+                        <td>${new Date(direction.createdAt).toLocaleString('ru-RU')}</td>
+                        <td>${direction.results || 'Не указано'}</td>
+                    `;
+                    laboratoryPatientsTable.appendChild(row);
+                });
+
+                attachCheckboxEvents(); // Вызов функции обработки чекбоксов
+            }
+
+            // Обновление состояния кнопки "Удалить"
+            function updateDeleteButtonState() {
+                deleteButton.disabled = selectedPatientIds.length === 0; // Блокировать, если нет выбранных записей
+            }
+
+            // Обработка чекбоксов
+            function attachCheckboxEvents() {
+                const rowCheckboxes = document.querySelectorAll('.rowCheckbox');
+
+                // Общий чекбокс
+                selectAllCheckbox.addEventListener('change', function () {
+                    const isChecked = this.checked;
+                    rowCheckboxes.forEach(checkbox => {
+                        checkbox.checked = isChecked;
+                        const id = checkbox.dataset.id;
+
+                        if (isChecked && !selectedPatientIds.includes(id)) {
+                            selectedPatientIds.push(id);
+                        } else if (!isChecked) {
+                            selectedPatientIds = [];
+                        }
+                    });
+
+                    updateDeleteButtonState(); // Обновляем состояние кнопки
+                });
+
+                // Индивидуальные чекбоксы
+                rowCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', function () {
+                        const id = this.dataset.id;
+                        if (this.checked) {
+                            selectedPatientIds.push(id);
+                        } else {
+                            selectedPatientIds = selectedPatientIds.filter(patientId => patientId !== id);
+                        }
+
+                        // Обновляем состояние общего чекбокса
+                        const allChecked = Array.from(rowCheckboxes).every(cb => cb.checked);
+                        const someChecked = Array.from(rowCheckboxes).some(cb => cb.checked);
+                        selectAllCheckbox.checked = allChecked;
+                        selectAllCheckbox.indeterminate = !allChecked && someChecked;
+
+                        updateDeleteButtonState(); // Обновляем состояние кнопки
+                    });
+                });
+            }
+
+            // Обработчик кнопки "Удалить"
+            deleteButton.addEventListener('click', function () {
+                if (selectedPatientIds.length === 0) {
+                    alert('Пожалуйста, выберите хотя бы одну запись для удаления.');
                     return;
                 }
 
-                displayLaboratoryPatients(data);
-            })
-            .catch(error => {
-                console.error('Ошибка при загрузке направлений лаборатории:', error);
-                laboratoryPatientsTable.innerHTML = '<tr><td colspan="8">Ошибка при загрузке данных</td></tr>';
+                if (confirm('Вы уверены, что хотите удалить выбранные записи?')) {
+                    // Отправляем запрос на сервер для удаления записей
+                    fetch('/laboratory/directions/delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ids: selectedPatientIds }),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            alert(data.message || 'Записи успешно удалены.');
+                            loadLaboratoryPatients(); // Перезагружаем данные после удаления
+                        })
+                        .catch(error => {
+                            console.error('Ошибка при удалении записей:', error);
+                            alert('Ошибка при выполнении операции.');
+                        });
+                }
             });
-    }
 
-    // Отображение данных в таблице
-    function displayLaboratoryPatients(directions) {
-        laboratoryPatientsTable.innerHTML = '';
+            // Поиск пациентов
+            searchInput.addEventListener('input', function () {
+                const query = this.value.toLowerCase();
+                const filteredData = laboratoryData.filter(patient =>
+                    (patient.patientId.fullName || '').toLowerCase().includes(query) ||
+                    (patient.patientId.passport || '').toLowerCase().includes(query) ||
+                    (patient.patientId.phone || '').toLowerCase().includes(query)
+                );
+                displayLaboratoryPatients(filteredData);
+            });
 
-        directions.forEach((direction, index) => {
-            const patient = direction.patientId || {};
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${patient.fullName || 'Не указано'}</td>
-                <td>${patient.birthDate ? new Date(patient.birthDate).toLocaleDateString() : 'Не указано'}</td>
-                <td>${patient.phone || 'Не указано'}</td>
-                <td>${direction.serviceName || 'Не указано'}</td>
-                <td>${direction.result || 'Нет данных'}</td>
-                <td>${direction.status || 'Ожидает'}</td>
-            `;
-            laboratoryPatientsTable.appendChild(row);
+            // Загрузка данных при старте
+            loadLaboratoryPatients();
         });
-    }
-
-    // Загрузка данных при инициализации
-    loadLaboratoryPatients();
-});
-
     </script>
 </body>
 </html>

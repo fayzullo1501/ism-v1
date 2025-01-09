@@ -43,6 +43,17 @@
     transform: scale(1.05);
 }
 
+#sendToLaboratoryButton {
+    background-color: #E6E9F0;
+    font-weight: 100;
+    color: #000;
+}
+
+#sendToLaboratoryButton:hover {
+    background-color: none;
+    transform: scale(1.05);
+}
+
 #deleteButton {
     background-color: #E6E9F0;
     font-weight: 100;

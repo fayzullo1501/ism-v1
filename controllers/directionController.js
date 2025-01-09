@@ -4,7 +4,7 @@ const Patient = require('../models/patientModel'); // Модель пациен�
 // Контроллер для добавления направления
 exports.addDirection = async (req, res) => {
     try {
-        const { patientId, serviceName, doctorName, wardNumber, wardDays, wardCapacity, roomNumber, totalPrice } = req.body;
+        const { patientId, serviceName, serviceType, doctorName, wardNumber, wardDays, wardCapacity, roomNumber, totalPrice } = req.body;
 
         // Проверка существования пациента
         const patientExists = await Patient.findById(patientId);
@@ -13,23 +13,23 @@ exports.addDirection = async (req, res) => {
         }
 
         // Приведение данных и расчет общей стоимости
-        const parsedWardDays = parseInt(wardDays) || 1; // Количество дней
-        const parsedWardCapacity = parseInt(wardCapacity) || 1; // Количество мест
+        const parsedWardDays = parseInt(wardDays) || 1;
+        const parsedWardCapacity = parseInt(wardCapacity) || 1;
         const parsedTotalPrice = parseFloat(totalPrice) || 0;
 
-        // Расчет итоговой стоимости
         const calculatedTotalPrice = parsedTotalPrice * parsedWardCapacity * parsedWardDays;
 
         // Создание нового направления
         const newDirection = new Direction({
             patientId,
             serviceName: serviceName || 'Не указано',
+            serviceType: serviceType || 'Не указано', // Добавлено поле
             doctorName: doctorName || 'Не указано',
             roomNumber: roomNumber || 'Не указано',
             wardNumber: wardNumber || 'Не указано',
             wardDays: parsedWardDays,
             wardCapacity: parsedWardCapacity,
-            totalPrice: calculatedTotalPrice
+            totalPrice: calculatedTotalPrice,
         });
 
         await newDirection.save();
@@ -44,7 +44,8 @@ exports.addDirection = async (req, res) => {
 exports.getDirections = async (req, res) => {
     try {
         const directions = await Direction.find()
-            .populate('patientId', 'fullName birthDate passport phone') // Подтягиваем данные пациента
+            .populate('patientId', 'fullName birthDate passport phone')
+            .select('serviceName serviceType doctorName roomNumber wardNumber totalPrice paid updatedAt') // Добавлены поля
             .sort({ createdAt: -1 });
 
         res.status(200).json(directions);
@@ -61,8 +62,8 @@ exports.updatePaymentStatus = async (req, res) => {
 
         const updatedDirection = await Direction.findByIdAndUpdate(
             id,
-            { paid: true },
-            { new: true } // Возвращает обновленный документ
+            { paid: true, updatedAt: new Date() }, // Добавлено обновление updatedAt
+            { new: true }
         );
 
         if (!updatedDirection) {
@@ -81,7 +82,10 @@ exports.getDirectionById = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const direction = await Direction.findById(id).populate('patientId', 'fullName birthDate passport phone');
+        const direction = await Direction.findById(id)
+            .populate('patientId', 'fullName birthDate passport phone')
+            .select('serviceName serviceType doctorName roomNumber wardNumber totalPrice paid updatedAt'); // Добавлены поля
+
         if (!direction) {
             return res.status(404).json({ message: 'Направление не найдено' });
         }
@@ -92,6 +96,7 @@ exports.getDirectionById = async (req, res) => {
         res.status(500).json({ message: 'Ошибка сервера', error });
     }
 };
+
 
 // Контроллер для удаления направления
 exports.deleteDirection = async (req, res) => {

@@ -378,12 +378,13 @@
                 const directionData = {
                     patientId,
                     serviceName: serviceSelect.options[serviceSelect.selectedIndex]?.textContent || '',
+                    serviceType: serviceCategorySelect.options[serviceCategorySelect.selectedIndex]?.textContent || '', // Добавлено поле serviceType
                     doctorName: doctorSelect.options[doctorSelect.selectedIndex]?.textContent || '',
                     roomNumber: roomNumberInput.value || '',
                     wardNumber: wardNumberSelect.options[wardNumberSelect.selectedIndex]?.value || '',
                     totalPrice: parseFloat(totalPriceElement.textContent.replace(/\D/g, '')) || 0,
                 };
-    
+
                 fetch('/directions/add', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
