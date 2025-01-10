@@ -37,7 +37,7 @@
                         <button id="addResultButton" disabled>Добавить результат</button>
                         <button id="deleteButton" disabled>Удалить</button>
                     </div>
-                    <input type="text" id="searchInput" placeholder="Поиск по ФИО, паспорту, телефону" class="search-input">
+                    <input type="text" id="searchInput" placeholder="Поиск" class="search-input">
                 </div>                
 
                 <!-- Таблица пациентов -->
@@ -131,8 +131,21 @@
 
             // Обновление состояния кнопки "Удалить"
             function updateDeleteButtonState() {
-                deleteButton.disabled = selectedPatientIds.length === 0; // Блокировать, если нет выбранных записей
+                deleteButton.disabled = selectedPatientIds.length === 0; // Блокировать "Удалить", если нет выбранных записей
+                addResultButton.disabled = selectedPatientIds.length !== 1; // Блокировать "Добавить результат", если выбрано не одно направление
             }
+
+            // Обработчик кнопки "Добавить результат"
+            const addResultButton = document.getElementById('addResultButton');
+            addResultButton.addEventListener('click', function () {
+                if (selectedPatientIds.length !== 1) {
+                    alert('Пожалуйста, выберите одного пациента для добавления результата.');
+                    return;
+                }
+
+                const selectedPatientId = selectedPatientIds[0];
+                window.location.href = `/add-results.html?patientId=${selectedPatientId}`; // Перенаправление с ID пациента
+            });
 
             // Обработка чекбоксов
             function attachCheckboxEvents() {

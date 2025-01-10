@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лаборатория - Пациенты</title>
+    <link rel="stylesheet" href="/styles/dashboard-admin.css">
+    <link rel="stylesheet" href="/styles/laboratory.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="icon" href="/images/favicon.svg" type="image/png">
+</head>
+<body>
+    <div class="container">
+        <!-- Левая панель с меню -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="/images/logo.png" alt="Клиника" class="logo-img">
+            </div>
+            <ul class="menu">
+                <li><a href="dashboard-laboratory.html"><i class="fas fa-home"></i> Главная</a></li>
+                <li><a href="patients-laboratory.html" class="active"><i class="fas fa-user-injured"></i> Пациенты</a></li>
+            </ul>
+            <div class="logout">
+                <a href="/logout"><i class="fas fa-sign-out-alt"></i> Выход</a>
+            </div>
+        </div>
+    
+        <!-- Правая панель с таблицей пациентов -->
+        <div class="main-content">
+            <div class="module-header">
+                <h1>Добавить результаты анализа</h1>
+            </div>
+            <div class="module-content">
+                <!-- Форма выбора услуги и кнопка Сохранить -->
+                <div class="actions">
+                    <div class="action-buttons">
+                        <select id="serviceSelect" class="form-control">
+                            <option value=""> Выберите тип услуги </option>
+                            <!-- Услуги будут загружаться динамически -->
+                        </select>
+                        <button id="saveButton" disabled>Сохранить</button>
+                    </div>
+                </div>
+
+                <!-- Редактируемый шаблон -->
+                <textarea id="editor">
+                    <div style="text-align: center; font-weight: bold; font-size: 18px;">Ревматологическая клиника</div>
+                    <hr>
+                    <div style="text-align: left; font-size: 14px;">
+                        <p>ФИО пациента: ____________________________</p>
+                        <p>Дата рождения: ___________________________</p>
+                        <p>Адрес и телефон: _________________________</p>
+                    </div>
+                    <table style="width: 100%; border: 1px solid black; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th style="border: 1px solid black; padding: 8px;">№</th>
+                                <th style="border: 1px solid black; padding: 8px;">Показатель</th>
+                                <th style="border: 1px solid black; padding: 8px;">Результат</th>
+                                <th style="border: 1px solid black; padding: 8px;">Норма</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="border: 1px solid black; padding: 8px;">1</td>
+                                <td style="border: 1px solid black; padding: 8px;">Гемоглобин</td>
+                                <td style="border: 1px solid black; padding: 8px;">______</td>
+                                <td style="border: 1px solid black; padding: 8px;">120-150</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid black; padding: 8px;">2</td>
+                                <td style="border: 1px solid black; padding: 8px;">Эритроциты</td>
+                                <td style="border: 1px solid black; padding: 8px;">______</td>
+                                <td style="border: 1px solid black; padding: 8px;">4.0-5.5</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>Подпись врача: ___________________________</p>
+                </textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const serviceSelect = document.getElementById('serviceSelect');
+            const resultTemplate = document.getElementById('resultTemplate');
+            const saveButton = document.getElementById('saveButton');
+
+            // Получение списка услуг с сервера
+            function loadServices() {
+                fetch('/services/list') // Подключение к API для получения услуг
+                    .then(response => response.json())
+                    .then(services => {
+                        if (Array.isArray(services) && services.length > 0) {
+                            services.forEach(service => {
+                                const option = document.createElement('option');
+                                option.value = service._id; // ID услуги
+                                option.textContent = service.serviceName; // Название услуги
+                                serviceSelect.appendChild(option);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при загрузке услуг:', error);
+                    });
+            }
+
+            // Обработка выбора услуги
+            serviceSelect.addEventListener('change', function () {
+                const selectedServiceId = this.value;
+
+                if (selectedServiceId) {
+                    // Замените логику на загрузку шаблона из услуги
+                    resultTemplate.innerHTML = `<p>Шаблон для услуги с ID ${selectedServiceId}</p>`;
+                    saveButton.disabled = false;
+                } else {
+                    resultTemplate.innerHTML = '<p>Пожалуйста, выберите услугу, чтобы увидеть шаблон.</p>';
+                    saveButton.disabled = true;
+                }
+            });
+
+            // Загрузка списка услуг при инициализации
+            loadServices();
+        });
+    </script>
+</body>
+</html>

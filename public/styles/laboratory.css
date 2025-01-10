@@ -21,6 +21,22 @@
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
+.action-buttons select {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+select.form-control, select.form-control option {
+    color: black !important;
+    background-color: white !important;
+    font-size: 16px;
+}
+
+
 #addResultButton {
     background-color: #e94949;
     font-weight: 100;
@@ -40,6 +56,17 @@
 
 #deleteButton:hover {
     background-color: none;
+    transform: scale(1.05);
+}
+
+#saveButton {
+    background-color: #e94949;
+    font-weight: 100;
+    color: white;
+}
+
+#saveButton:hover {
+    background-color: #cb1f1f;
     transform: scale(1.05);
 }
 
