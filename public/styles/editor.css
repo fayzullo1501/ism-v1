@@ -1,0 +1,22 @@
+/* Контейнер редактора */
+.editor-space {
+  width: 210mm; /* Ширина A4 */
+  height: 297mm; /* Высота A4 */
+  margin: 20px auto; /* Центрирование по горизонтали и отступ сверху/снизу */
+  margin-bottom: 50px;
+  background-color: #f9f9f9; /* Светлый фон */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Тень */
+  display: flex;
+  align-items: center; /* Центрирование содержимого по вертикали */
+  justify-content: center; /* Центрирование содержимого по горизонтали */
+  text-align: center;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  color: #888;
+  overflow: hidden; /* Обрезка содержимого, если выходит за пределы */
+}
+
+/* Основной контейнер панели (с прокруткой) */
+.main-content {
+  overflow-y: auto; /* Вертикальная прокрутка */
+}

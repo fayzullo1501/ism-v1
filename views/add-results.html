@@ -6,6 +6,7 @@
     <title>Лаборатория - Пациенты</title>
     <link rel="stylesheet" href="/styles/dashboard-admin.css">
     <link rel="stylesheet" href="/styles/laboratory.css">
+    <link rel="stylesheet" href="/styles/editor.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="icon" href="/images/favicon.svg" type="image/png">
 </head>
@@ -41,88 +42,166 @@
                         <button id="saveButton" disabled>Сохранить</button>
                     </div>
                 </div>
-
-                <!-- Редактируемый шаблон -->
-                <textarea id="editor">
-                    <div style="text-align: center; font-weight: bold; font-size: 18px;">Ревматологическая клиника</div>
-                    <hr>
-                    <div style="text-align: left; font-size: 14px;">
-                        <p>ФИО пациента: ____________________________</p>
-                        <p>Дата рождения: ___________________________</p>
-                        <p>Адрес и телефон: _________________________</p>
-                    </div>
-                    <table style="width: 100%; border: 1px solid black; border-collapse: collapse;">
-                        <thead>
-                            <tr>
-                                <th style="border: 1px solid black; padding: 8px;">№</th>
-                                <th style="border: 1px solid black; padding: 8px;">Показатель</th>
-                                <th style="border: 1px solid black; padding: 8px;">Результат</th>
-                                <th style="border: 1px solid black; padding: 8px;">Норма</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="border: 1px solid black; padding: 8px;">1</td>
-                                <td style="border: 1px solid black; padding: 8px;">Гемоглобин</td>
-                                <td style="border: 1px solid black; padding: 8px;">______</td>
-                                <td style="border: 1px solid black; padding: 8px;">120-150</td>
-                            </tr>
-                            <tr>
-                                <td style="border: 1px solid black; padding: 8px;">2</td>
-                                <td style="border: 1px solid black; padding: 8px;">Эритроциты</td>
-                                <td style="border: 1px solid black; padding: 8px;">______</td>
-                                <td style="border: 1px solid black; padding: 8px;">4.0-5.5</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <p>Подпись врача: ___________________________</p>
-                </textarea>
+            </div>
+            <!-- Пространство для редактора -->
+            <div id="editorSpace" class="editor-space" style="position: relative; padding: 0;">
+                <p>Выберите услугу, чтобы отобразить шаблон.</p>
             </div>
         </div>
+
+        
+          
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const serviceSelect = document.getElementById('serviceSelect');
-            const resultTemplate = document.getElementById('resultTemplate');
+            const editorSpace = document.getElementById('editorSpace');
             const saveButton = document.getElementById('saveButton');
-
+    
             // Получение списка услуг с сервера
             function loadServices() {
-                fetch('/services/list') // Подключение к API для получения услуг
+                fetch('/services/list')
                     .then(response => response.json())
                     .then(services => {
                         if (Array.isArray(services) && services.length > 0) {
                             services.forEach(service => {
                                 const option = document.createElement('option');
-                                option.value = service._id; // ID услуги
-                                option.textContent = service.serviceName; // Название услуги
+                                option.value = service._id;
+                                option.textContent = service.serviceName;
                                 serviceSelect.appendChild(option);
                             });
                         }
                     })
-                    .catch(error => {
-                        console.error('Ошибка при загрузке услуг:', error);
-                    });
+                    .catch(error => console.error('Ошибка при загрузке услуг:', error));
             }
+    
+            // Загрузка шаблона для определенной услуги
+            function loadTemplateForService(serviceId) {
+                let templatePath = null;
+    
+                if (serviceId === '677cb177de5c3701801b5996') {
+                    templatePath = '/results-templates/analys-test-1.html';
+                } else if (serviceId === '677cb165de5c3701801b5993') {
+                    templatePath = '/results-templates/analys-test-2.html';
+                } else if (serviceId === '677cb15ade5c3701801b5990') {
+                    templatePath = '/results-templates/analys-test-3.html';
+                }
+    
+                if (templatePath) {
+                    fetch(templatePath)
+                        .then(response => response.text())
+                        .then(html => {
+                            editorSpace.innerHTML = html;
+    
+                            // После загрузки шаблона, загрузить данные пациента
+                            const patientId = getPatientIdFromURL();
+                            if (patientId) {
+                                setTimeout(() => loadPatientData(patientId), 0); // Отложить выполнение, чтобы HTML успел отрендериться
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Ошибка при загрузке шаблона:', error);
+                            editorSpace.innerHTML = '<p>Ошибка загрузки шаблона.</p>';
+                        });
+                } else {
+                    editorSpace.innerHTML = '<p>Пожалуйста, выберите услугу, чтобы увидеть шаблон.</p>';
+                }
+            }
+    
+            // Загрузка данных пациента
+            async function loadPatientData(patientId) {
+                try {
+                    // Используем `patientId` для получения данных пациента
+                    const response = await fetch(`/patients/${patientId}`);
+                    if (!response.ok) throw new Error("Ошибка получения данных пациента");
 
+                    const data = await response.json();
+
+                    // Обновляем таблицу пациента
+                    const patientTableBody = document.querySelector('#patientTableBody');
+                    if (patientTableBody) {
+                        patientTableBody.innerHTML = `
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 8px;">${data.fullName}</td>
+                                <td style="border: 1px solid #000; padding: 8px;">${new Date(data.birthDate).toLocaleDateString()}</td>
+                                <td style="border: 1px solid #000; padding: 8px;">${data.address}</td>
+                                <td style="border: 1px solid #000; padding: 8px;">${new Date().toLocaleDateString()}</td>
+                            </tr>
+                        `;
+                    }
+                } catch (error) {
+                    console.error("Ошибка загрузки данных пациента:", error);
+                }
+            }
+    
+            // Получение patientId из URL
+            function getPatientIdFromURL() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get("patientId");
+            }
+    
             // Обработка выбора услуги
             serviceSelect.addEventListener('change', function () {
                 const selectedServiceId = this.value;
-
+    
                 if (selectedServiceId) {
-                    // Замените логику на загрузку шаблона из услуги
-                    resultTemplate.innerHTML = `<p>Шаблон для услуги с ID ${selectedServiceId}</p>`;
+                    loadTemplateForService(selectedServiceId);
                     saveButton.disabled = false;
                 } else {
-                    resultTemplate.innerHTML = '<p>Пожалуйста, выберите услугу, чтобы увидеть шаблон.</p>';
+                    editorSpace.innerHTML = '<p>Пожалуйста, выберите услугу, чтобы увидеть шаблон.</p>';
                     saveButton.disabled = true;
                 }
             });
-
+    
+            // Сохранение в PDF
+            saveButton.addEventListener('click', function () {
+                const { jsPDF } = window.jspdf;
+    
+                // Сначала заменяем поля ввода на текст
+                const inputs = editorSpace.querySelectorAll('input[type="text"]');
+                inputs.forEach(input => {
+                    const value = input.value;
+                    const span = document.createElement('span');
+                    span.textContent = value;
+                    span.style.display = 'block'; // Гарантируем, что текст занимает место
+                    span.style.textAlign = 'center'; // Выравнивание текста по центру
+                    input.parentElement.replaceChild(span, input);
+                });
+    
+                // Используем html2canvas для рендеринга содержимого editorSpace
+                html2canvas(editorSpace, { scale: 2 }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+    
+                    // Масштабируем содержимое под A4
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    
+                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                    pdf.save('Анализ_крови.pdf');
+                });
+            });
+    
             // Загрузка списка услуг при инициализации
             loadServices();
+    
+            // Загрузка данных пациента при открытии страницы
+            const patientId = getPatientIdFromURL();
+            if (patientId) {
+                loadPatientData(patientId);
+            }
         });
     </script>
+    
+    
+    
+    
+    
+    
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 </body>
 </html>
