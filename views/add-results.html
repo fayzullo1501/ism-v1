@@ -59,6 +59,59 @@
             const editorSpace = document.getElementById('editorSpace');
             const saveButton = document.getElementById('saveButton');
     
+            // Получение текущей даты в формате ДД.ММ.ГГГГ
+            function getCurrentDate() {
+                const now = new Date();
+                return now.toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+            }
+    
+            // Получение recordId из URL
+            function getRecordIdFromURL() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get("recordId");
+            }
+    
+            // Загрузка данных направления по recordId
+            async function loadDirectionData(recordId) {
+                try {
+                    const response = await fetch(`/laboratory/directions/${recordId}`);
+                    if (!response.ok) throw new Error("Ошибка загрузки данных направления");
+    
+                    const direction = await response.json();
+    
+                    // Загружаем данные пациента из направления
+                    const patient = direction.patientId;
+                    if (patient) {
+                        updatePatientTable(patient);
+                    } else {
+                        console.error("Данные пациента отсутствуют в направлении.");
+                    }
+                } catch (error) {
+                    console.error("Ошибка загрузки данных направления:", error);
+                }
+            }
+    
+            // Обновление таблицы пациента
+            function updatePatientTable(patient) {
+                const patientTableBody = document.querySelector('#patientTableBody');
+                const printDate = getCurrentDate(); // Получаем текущую дату
+    
+                if (patientTableBody) {
+                    patientTableBody.innerHTML = `
+                        <tr>
+                            <td style="border: 1px solid #000; padding: 8px;">${patient.fullName}</td>
+                            <td style="border: 1px solid #000; padding: 8px;">${new Date(patient.birthDate).toLocaleDateString()}</td>
+                            <td style="border: 1px solid #000; padding: 8px;">${patient.phone || 'Не указано'}</td>
+                            <td style="border: 1px solid #000; padding: 8px;">${printDate}</td>
+                        </tr>
+                    `;
+                }
+            }
+    
             // Получение списка услуг с сервера
             function loadServices() {
                 fetch('/services/list')
@@ -95,9 +148,9 @@
                             editorSpace.innerHTML = html;
     
                             // После загрузки шаблона, загрузить данные пациента
-                            const patientId = getPatientIdFromURL();
-                            if (patientId) {
-                                setTimeout(() => loadPatientData(patientId), 0); // Отложить выполнение, чтобы HTML успел отрендериться
+                            const recordId = getRecordIdFromURL();
+                            if (recordId) {
+                                loadDirectionData(recordId); // Загружаем данные пациента через recordId
                             }
                         })
                         .catch(error => {
@@ -107,38 +160,6 @@
                 } else {
                     editorSpace.innerHTML = '<p>Пожалуйста, выберите услугу, чтобы увидеть шаблон.</p>';
                 }
-            }
-    
-            // Загрузка данных пациента
-            async function loadPatientData(patientId) {
-                try {
-                    // Используем `patientId` для получения данных пациента
-                    const response = await fetch(`/patients/${patientId}`);
-                    if (!response.ok) throw new Error("Ошибка получения данных пациента");
-
-                    const data = await response.json();
-
-                    // Обновляем таблицу пациента
-                    const patientTableBody = document.querySelector('#patientTableBody');
-                    if (patientTableBody) {
-                        patientTableBody.innerHTML = `
-                            <tr>
-                                <td style="border: 1px solid #000; padding: 8px;">${data.fullName}</td>
-                                <td style="border: 1px solid #000; padding: 8px;">${new Date(data.birthDate).toLocaleDateString()}</td>
-                                <td style="border: 1px solid #000; padding: 8px;">${data.address}</td>
-                                <td style="border: 1px solid #000; padding: 8px;">${new Date().toLocaleDateString()}</td>
-                            </tr>
-                        `;
-                    }
-                } catch (error) {
-                    console.error("Ошибка загрузки данных пациента:", error);
-                }
-            }
-    
-            // Получение patientId из URL
-            function getPatientIdFromURL() {
-                const urlParams = new URLSearchParams(window.location.search);
-                return urlParams.get("patientId");
             }
     
             // Обработка выбора услуги
@@ -158,7 +179,7 @@
             saveButton.addEventListener('click', function () {
                 const { jsPDF } = window.jspdf;
     
-                // Сначала заменяем поля ввода на текст
+                // Заменяем поля ввода на текст
                 const inputs = editorSpace.querySelectorAll('input[type="text"]');
                 inputs.forEach(input => {
                     const value = input.value;
@@ -183,16 +204,18 @@
                 });
             });
     
+            // Инициализация страницы
+            const recordId = getRecordIdFromURL();
+            if (recordId) {
+                loadDirectionData(recordId); // Загружаем данные направления и пациента
+            }
+    
             // Загрузка списка услуг при инициализации
             loadServices();
-    
-            // Загрузка данных пациента при открытии страницы
-            const patientId = getPatientIdFromURL();
-            if (patientId) {
-                loadPatientData(patientId);
-            }
         });
     </script>
+    
+    
     
     
     

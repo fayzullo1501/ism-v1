@@ -139,12 +139,20 @@
             const addResultButton = document.getElementById('addResultButton');
             addResultButton.addEventListener('click', function () {
                 if (selectedPatientIds.length !== 1) {
-                    alert('Пожалуйста, выберите одного пациента для добавления результата.');
+                    alert('Пожалуйста, выберите одну запись для добавления результата.');
                     return;
                 }
 
-                const selectedPatientId = selectedPatientIds[0];
-                window.location.href = `/add-results.html?patientId=${selectedPatientId}`; // Перенаправление с ID пациента
+                const selectedCheckbox = document.querySelector(`.rowCheckbox[data-id="${selectedPatientIds[0]}"]`);
+                const recordId = selectedCheckbox.dataset.id; // Используем ID записи (recordId)
+
+                if (!recordId) {
+                    alert('Не удалось найти идентификатор записи.');
+                    return;
+                }
+
+                // Формируем URL с recordId
+                window.location.href = `/add-results.html?recordId=${encodeURIComponent(recordId)}`;
             });
 
             // Обработка чекбоксов

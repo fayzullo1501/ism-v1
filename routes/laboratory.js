@@ -8,4 +8,8 @@ router.get('/directions', laboratoryController.getLaboratoryDirections);
 // Удалить направления из лаборатории
 router.post('/directions/delete', laboratoryController.deleteLaboratoryDirections);
 
+// Получить направление по recordId
+router.get('/directions/:recordId', laboratoryController.getDirectionByRecordId);
+
+
 module.exports = router;

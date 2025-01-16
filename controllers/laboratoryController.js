@@ -33,3 +33,24 @@ exports.deleteLaboratoryDirections = async (req, res) => {
         res.status(500).json({ message: 'Ошибка сервера.' });
     }
 };
+
+// Получить направление по recordId
+exports.getDirectionByRecordId = async (req, res) => {
+    try {
+        const { recordId } = req.params;
+
+        // Найти направление по ID и подтянуть данные пациента
+        const direction = await Laboratory.findById(recordId)
+            .populate('patientId', 'fullName birthDate phone');
+
+        if (!direction) {
+            return res.status(404).json({ message: 'Направление не найдено.' });
+        }
+
+        res.status(200).json(direction);
+    } catch (error) {
+        console.error('Ошибка при получении направления:', error);
+        res.status(500).json({ message: 'Ошибка сервера.' });
+    }
+};
+
