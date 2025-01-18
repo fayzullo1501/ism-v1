@@ -32,6 +32,17 @@
     transform: scale(1.05);
 }
 
+#addUserBtn {
+    background-color: #e94949;
+    font-weight: 100;
+    color: white;
+}
+
+#addUserBtn:hover {
+    background-color: #cb1f1f;
+    transform: scale(1.05);
+}
+
 #editDoctorBtn {
     background-color: #E6E9F0;
     font-weight: 100;
@@ -43,6 +54,17 @@
     transform: scale(1.05);
 }
 
+#editUserBtn {
+    background-color: #E6E9F0;
+    font-weight: 100;
+    color: #000;
+}
+
+#editUserBtn:hover {
+    background-color: none;
+    transform: scale(1.05);
+}
+
 #deleteDoctorBtn {
     background-color: #E6E9F0;
     font-weight: 100;
@@ -50,6 +72,17 @@
 }
 
 #deleteDoctorBtn:hover {
+    background-color: none;
+    transform: scale(1.05);
+}
+
+#deleteUserBtn {
+    background-color: #E6E9F0;
+    font-weight: 100;
+    color: #000;
+}
+
+#deleteUserBtn:hover {
     background-color: none;
     transform: scale(1.05);
 }
@@ -132,6 +165,56 @@
 }
 
 .doctors-table td:last-child button:hover {
+    background-color: #da1616;
+}
+
+
+/* Стили для таблицы пользователей */
+.users-table {
+    width: 100%;
+    border-collapse: collapse; /* Убрали "separate", чтобы границы таблицы выглядели более цельно */
+    margin-top: 20px;
+    background-color: #ffffff;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.users-table th, .users-table td {
+    padding: 15px;
+    text-align: left;
+    border: 1px solid #dcdcdc; /* Установили рамку для всех сторон */
+    vertical-align: middle;
+}
+
+.users-table th {
+    background-color: #E6E9F0;
+    font-weight: lighter;
+    color: #757575;
+    border-bottom: 2px solid #dcdcdc; /* Светло-серая рамка для заголовка */
+}
+
+.users-table tr:hover td {
+    background-color: #f1f1f1;
+}
+
+
+.users-table th:first-child, 
+.users-table td:first-child {
+    text-align: center;
+    width: 40px;
+}
+
+.users-table td:last-child button {
+    padding: 5px 10px;
+    border: none;
+    background-color: #e94949;
+    color: white;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.users-table td:last-child button:hover {
     background-color: #da1616;
 }
 

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Администратор - Пользователи</title>
+        <link rel="stylesheet" href="../styles/dashboard-admin.css">
+        <link rel="stylesheet" href="../styles/doctors.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <link rel="icon" href="/images/favicon.svg" type="image/png">
+    </head>
+<body>
+    <div class="container">
+        <!-- Левая панель с меню -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="/images/logo.png" alt="Клиника" class="logo-img">
+            </div>
+            <ul class="menu">
+                <li><a href="dashboard-admin.html"><i class="fas fa-home"></i> Главная</a></li>
+                <li><a href="patients.html"><i class="fas fa-user-injured"></i> Пациенты</a></li>
+                <li><a href="services.html"><i class="fas fa-briefcase-medical"></i> Услуги</a></li>
+                <li><a href="doctors.html"><i class="fas fa-user-md"></i> Врачи</a></li>
+                <li><a href="wards.html"><i class="fas fa-hospital"></i> Палаты</a></li>
+                <li><a href="users.html" class="active"><i class="fas fa-users"></i> Пользователи</a></li>
+            </ul>
+            <div class="logout">
+                <a href="login.html"><i class="fas fa-sign-out-alt"></i> Выход</a>
+            </div>
+        </div>
+    
+        <!-- Правая панель (контент) -->
+        <div class="main-content">
+            <div class="module-header">
+                <h1>Пользователи</h1>
+            </div>
+            <div class="module-content">
+                <div class="actions">
+                    <div class="action-buttons">
+                        <button id="addUserBtn">Добавить</button>
+                        <button id="deleteUserBtn" disabled>Удалить</button>
+                        <button id="editUserBtn" disabled>Изменить</button>
+                    </div>
+                    <input type="text" id="searchInput" placeholder="Поиск" class="search-input">
+                </div>
+    
+                <div class="table-wrapper">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
+                                <th>№</th>
+                                <th>ФИО</th>
+                                <th>Логин</th>
+                                <th>Пароль</th>
+                                <th>Роль</th>
+                                <th>Дата регистрации</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Данные будут загружены динамически -->
+                        </tbody>
+                    </table>
+                </div>                
+                <div id="pagination" class="pagination-container"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно для добавления пользователя -->
+    <div class="overlay" id="overlay"></div>
+    <div id="addUserModal" class="modal">
+        <h2>Добавить нового пользователя</h2>
+        <form id="addUserForm">
+            <div class="form-row">
+                <label for="fullName">ФИО:</label>
+                <input type="text" name="fullName" id="fullName" placeholder="Введите ФИО" required>
+            </div>
+            <div class="form-row">
+                <label for="login">Логин:</label>
+                <input type="text" name="login" id="login" placeholder="Введите логин" required>
+            </div>
+            <div class="form-row">
+                <label for="password">Пароль:</label>
+                <input type="password" name="password" id="password" placeholder="Введите пароль" required>
+            </div>
+            <div class="form-row">
+                <label for="role">Роль:</label>
+                <select name="role" id="role" required>
+                    <option value="" disabled selected>Выберите роль</option>
+                    <option value="Врач">Врач</option>
+                    <option value="Касса">Касса</option>
+                    <option value="Лаборатория">Лаборатория</option>
+                    <option value="Регистратура">Регистратура</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn-save">Сохранить</button>
+                <button type="button" class="btn-cancel">Отменить</button>
+            </div>
+        </form>
+    </div>
+    
+
+    <!-- Модальное окно для редактирования пользователя -->
+    <div id="editUserModal" class="modal">
+        <h2>Изменить данные пользователя</h2>
+        <form id="editUserForm">
+            <input type="hidden" name="userId">
+            <div class="form-row">
+                <label for="editFullName">ФИО:</label>
+                <input type="text" name="fullName" id="editFullName" placeholder="ФИО" required>
+            </div>
+            <div class="form-row">
+                <label for="editLogin">Логин:</label>
+                <input type="text" name="login" id="editLogin" placeholder="Логин" required>
+            </div>
+            <div class="form-row">
+                <label for="editPassword">Пароль:</label>
+                <input type="password" name="password" id="editPassword" placeholder="Пароль" required>
+            </div>
+            <div class="form-row">
+                <label for="editRole">Роль:</label>
+                <select name="role" id="editRole" required>
+                    <option value="" disabled selected>Выберите роль</option>
+                    <option value="Врач">Врач</option>
+                    <option value="Касса">Касса</option>
+                    <option value="Лаборатория">Лаборатория</option>
+                    <option value="Регистратура">Регистратура</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn-save">Сохранить</button>
+                <button type="button" class="btn-cancel">Отменить</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let selectedUserId = null;
+
+        // Открытие модального окна для добавления пользователя
+        document.getElementById('addUserBtn').addEventListener('click', function () {
+            document.getElementById('addUserModal').classList.add('show');
+            document.getElementById('overlay').classList.add('show');
+        });
+
+        // Закрытие модальных окон
+        document.getElementById('overlay').addEventListener('click', closeModal);
+        document.querySelectorAll('.btn-cancel').forEach(button => button.addEventListener('click', closeModal));
+
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('show'));
+            document.getElementById('overlay').classList.remove('show');
+        }
+
+        // Обработка добавления пользователя
+        document.getElementById('addUserForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/users', {
+                method: 'POST',
+                body: new URLSearchParams(formData),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    alert('Пользователь успешно добавлен!');
+                    closeModal();
+                    loadUsers();
+                })
+                .catch((error) => {
+                    alert('Ошибка при добавлении пользователя');
+                    console.error(error);
+                });
+        });
+
+
+        // Открытие модального окна для редактирования пользователя
+        document.getElementById('editUserBtn').addEventListener('click', function () {
+            if (!selectedUserId) {
+                alert('Пожалуйста, выберите пользователя для редактирования');
+                return;
+            }
+
+            // Получаем данные пользователя с сервера
+            fetch(`/users/${selectedUserId}`)
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error('Ошибка при загрузке данных пользователя');
+                    }
+                    return response.json();
+                })
+                .then((user) => {
+                    // Заполняем форму редактирования
+                    document.querySelector('#editUserForm [name="userId"]').value = user._id;
+                    document.querySelector('#editUserForm [name="fullName"]').value = user.fullName;
+                    document.querySelector('#editUserForm [name="login"]').value = user.login;
+                    document.querySelector('#editUserForm [name="password"]').value = user.password;
+                    document.querySelector('#editUserForm [name="role"]').value = user.role;
+
+                    // Показываем модальное окно
+                    document.getElementById('editUserModal').classList.add('show');
+                    document.getElementById('overlay').classList.add('show');
+                })
+                .catch((error) => {
+                    alert('Ошибка при загрузке данных пользователя');
+                    console.error(error);
+                });
+        });
+
+
+        // Обработка изменения пользователя
+        document.getElementById('editUserForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const userId = formData.get('userId'); // ID пользователя для редактирования
+
+            // Отправляем данные на сервер
+            fetch(`/users/${userId}`, {
+                method: 'PUT',
+                body: new URLSearchParams(formData),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    alert('Данные пользователя успешно изменены!');
+                    closeModal();
+                    loadUsers(); // Обновляем таблицу после изменения
+                })
+                .catch((error) => {
+                    alert('Ошибка при изменении данных пользователя');
+                    console.error(error);
+                });
+        });
+
+
+
+        // Удаление пользователей (одного или нескольких)
+        document.getElementById('deleteUserBtn').addEventListener('click', function () {
+            // Получаем все выбранные чекбоксы
+            const selectedCheckboxes = document.querySelectorAll('#usersTableBody input[type="checkbox"]:checked');
+
+            if (selectedCheckboxes.length === 0) {
+                alert('Пожалуйста, выберите хотя бы одного пользователя для удаления');
+                return;
+            }
+
+            if (confirm('Вы действительно хотите удалить выбранных пользователей?')) {
+                // Массив для промисов удаления
+                const deletePromises = Array.from(selectedCheckboxes).map((checkbox) => {
+                    const userId = checkbox.dataset.userId; // ID пользователя из data атрибута
+                    return fetch(`/users/${userId}`, { method: 'DELETE' });
+                });
+
+                // Выполняем все запросы удаления
+                Promise.all(deletePromises)
+                    .then((responses) => {
+                        // Проверяем успешные ответы
+                        const failedDeletes = responses.filter((response) => !response.ok);
+                        if (failedDeletes.length > 0) {
+                            alert(`${failedDeletes.length} пользователей не удалось удалить`);
+                        } else {
+                            alert('Пользователи успешно удалены!');
+                        }
+
+                        // Обновляем таблицу после удаления
+                        loadUsers();
+                    })
+                    .catch((error) => {
+                        alert('Ошибка при удалении пользователей');
+                        console.error(error);
+                    });
+            }
+        });
+
+        // Загрузка списка пользователей
+        function loadUsers(searchQuery = '') {
+            fetch('/users')
+                .then(response => response.json())
+                .then(data => {
+                    const usersTableBody = document.getElementById('usersTableBody');
+                    usersTableBody.innerHTML = '';
+                    data.forEach((user, index) => {
+                        const row = `
+                            <tr>
+                                <td><input type="checkbox" data-user-id="${user._id}"></td>
+                                <td>${index + 1}</td>
+                                <td>${user.fullName || 'Не указано'}</td>
+                                <td>${user.login}</td>
+                                <td>
+                                    <span class="password-field" data-password="${user.password}">
+                                        ${'*'.repeat(user.password.length)}
+                                    </span>
+                                    <i class="fas fa-eye toggle-password" style="cursor: pointer;" data-password="${user.password}"></i>
+                                </td>
+                                <td>${user.role}</td>
+                                <td>${new Date(user.createdAt).toLocaleString()}</td>
+                            </tr>`;
+                        usersTableBody.insertAdjacentHTML('beforeend', row);
+
+                    });
+
+                    // Добавляем обработчик для иконок глазика
+                    document.querySelectorAll('.toggle-password').forEach(icon => {
+                        icon.addEventListener('click', function () {
+                            const passwordField = this.previousElementSibling;
+                            const isHidden = passwordField.textContent.startsWith('*');
+                            passwordField.textContent = isHidden ? this.dataset.password : '*'.repeat(this.dataset.password.length);
+                        });
+                    });
+                });
+        }
+
+        // Обработка выбора пользователя для редактирования и удаления
+        document.getElementById('usersTableBody').addEventListener('click', function (e) {
+            if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
+                selectedUserId = e.target.checked ? e.target.dataset.userId : null;
+                document.getElementById('editUserBtn').disabled = !selectedUserId;
+                document.getElementById('deleteUserBtn').disabled = !selectedUserId;
+            }
+        });
+
+        // Инициализация
+        loadUsers();
+        document.getElementById('searchInput').addEventListener('input', function () {
+            const query = this.value.toLowerCase();
+            loadUsers(query);
+        });
+
+        document.getElementById('selectAll').addEventListener('change', function () {
+            const checkboxes = document.querySelectorAll('#usersTableBody input[type="checkbox"]');
+            checkboxes.forEach(checkbox => (checkbox.checked = this.checked));
+        });
+    </script>
+</body>
+</html>
