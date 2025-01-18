@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/userModel');
+const authenticateToken = require('../middleware/authenticateToken'); // Middleware для проверки токена
 
-// Получить всех пользователей
-router.get('/', async (req, res) => {
+// Получить всех пользователей (защищённый маршрут)
+router.get('/', authenticateToken, async (req, res) => {
     try {
         const users = await User.find({});
         res.json(users);
@@ -12,8 +13,8 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Добавить нового пользователя
-router.post('/', async (req, res) => {
+// Добавить нового пользователя (защищённый маршрут)
+router.post('/', authenticateToken, async (req, res) => {
     const { fullName, login, password, role } = req.body;
 
     // Проверка на наличие роли "Администратор"
@@ -30,8 +31,8 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Редактировать пользователя
-router.put('/:id', async (req, res) => {
+// Редактировать пользователя (защищённый маршрут)
+router.put('/:id', authenticateToken, async (req, res) => {
     const { fullName, login, password, role } = req.body;
     const userId = req.params.id;
 
@@ -52,8 +53,8 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// Удалить пользователя
-router.delete('/:id', async (req, res) => {
+// Удалить пользователя (защищённый маршрут)
+router.delete('/:id', authenticateToken, async (req, res) => {
     const userId = req.params.id;
 
     try {

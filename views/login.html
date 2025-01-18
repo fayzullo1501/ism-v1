@@ -45,6 +45,34 @@
             </div>
         </div>
     </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (event) => {
+            event.preventDefault(); // Останавливаем стандартную отправку формы
+    
+            const login = document.getElementById('login').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+    
+            try {
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ login, password, role }),
+                });
+    
+                if (response.ok) {
+                    const data = await response.json();
+                    window.location.href = data.redirectUrl; // Перенаправление при успехе
+                } else {
+                    const errorData = await response.json();
+                    alert(errorData.message); // Показываем сообщение об ошибке
+                }
+            } catch (error) {
+                console.error('Ошибка сети:', error);
+                alert('Ошибка сети! Попробуйте снова.');
+            }
+        });
+    </script>
     
 </body>
 </html>

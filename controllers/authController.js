@@ -1,4 +1,8 @@
 const User = require('../models/userModel'); // Убедитесь, что путь корректный
+const jwt = require('jsonwebtoken'); // Подключение JWT
+
+// Секретный ключ для подписи токенов
+const JWT_SECRET = process.env.JWT_SECRET;
 
 exports.handleLogin = async (req, res) => {
     const { login, password, role } = req.body;
@@ -8,22 +12,37 @@ exports.handleLogin = async (req, res) => {
         const user = await User.findOne({ login: login, password: password, role: role });
 
         if (!user) {
-            return res.send('Неверные данные!'); // Отправка сообщения об ошибке
+            return res.status(401).json({ message: 'Неверные данные!' }); // Возвращаем ошибку авторизации
         }
 
-        // Успешная авторизация
-        if (role === 'Врач') {
-            res.redirect('/dashboard-doctor'); // Перенаправление на панель врача
-        } else if (role === 'Администратор') {
-            res.redirect('/dashboard-admin'); // Перенаправление на панель администратора
-        } else if (role === 'Касса') {
-            res.redirect('/dashboard-cashier'); // Перенаправление на панель кассира
-        } else if (role === 'Лаборатория') {
-            res.redirect('/dashboard-laboratory'); // Перенаправление на панель лаборатории
-        } else if (role === 'Регистратура') {
-            res.redirect('/dashboard-reception'); // Перенаправление на панель регистрации
+        // Генерация токена
+        const token = jwt.sign(
+            { id: user._id, login: user.login, role: user.role }, // Данные для токена
+            JWT_SECRET,
+            { expiresIn: '24h' } // Срок действия токена
+        );
+
+        // Сохранение токена в куках для клиента
+        res.cookie('token', token, { httpOnly: true, maxAge: 3600000 }); // Срок действия: 1 час
+
+        // Перенаправление в зависимости от роли
+        if (user.role === 'Администратор') {
+            res.redirect('/dashboard-admin.html');
+        } else if (user.role === 'Касса') {
+            res.redirect('/dashboard-cashier.html');
+        } else if (user.role === 'Врач') {
+            res.redirect('/dashboard-doctor.html');
+        } else if (user.role === 'Регистратура') {
+            res.redirect('/dashboard-reception.html');
+        } else if (user.role === 'Лаборатория') {
+            res.redirect('/dashboard-laboratory.html');
+        } else {
+            res.status(403).send('Роль не поддерживается');
         }
+        
+
     } catch (error) {
-        res.status(500).send('Ошибка сервера'); // Сообщение об ошибке сервера
+        console.error('Ошибка авторизации:', error);
+        res.status(500).json({ message: 'Ошибка сервера' }); // Сообщение об ошибке сервера
     }
 };
