@@ -23,7 +23,7 @@ exports.handleLogin = async (req, res) => {
         );
 
         // Сохранение токена в куках для клиента
-        res.cookie('token', token, { httpOnly: true, maxAge: 3600000 }); // Срок действия: 1 час
+        res.cookie('token', token, { httpsOnly: true, maxAge: 3600000 }); // Срок действия: 1 час
 
         // Перенаправление в зависимости от роли
         if (user.role === 'Администратор') {
