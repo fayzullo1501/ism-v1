@@ -22,7 +22,8 @@ const userSchema = new mongoose.Schema({
     },
     createdAt: {
         type: Date,
-        default: Date.now // Дата регистрации пользователя
+        default: Date.now,
+        immutable: true // Делаем поле неизменяемым
     }
 });
 
