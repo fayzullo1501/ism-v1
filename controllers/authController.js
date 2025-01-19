@@ -1,29 +1,30 @@
 const User = require('../models/userModel'); // Убедитесь, что путь корректный
 const jwt = require('jsonwebtoken'); // Подключение JWT
 
-// Секретный ключ для подписи токенов
 const JWT_SECRET = process.env.JWT_SECRET;
 
 exports.handleLogin = async (req, res) => {
     const { login, password, role } = req.body;
 
     try {
-        // Поиск пользователя в базе данных
-        const user = await User.findOne({ login: login, password: password, role: role });
+        const user = await User.findOne({ login, password, role });
 
         if (!user) {
-            return res.status(401).json({ message: 'Неверные данные!' }); // Возвращаем ошибку авторизации
+            return res.status(401).send(`
+                <script>
+                    alert('Неверные данные! Пожалуйста, проверьте логин, пароль или роль.');
+                    window.location.href = '/login';
+                </script>
+            `);
         }
 
-        // Генерация токена
         const token = jwt.sign(
-            { id: user._id, login: user.login, role: user.role }, // Данные для токена
+            { id: user._id, login: user.login, role: user.role },
             JWT_SECRET,
-            { expiresIn: '24h' } // Срок действия токена
+            { expiresIn: '24h' }
         );
 
-        // Сохранение токена в куках для клиента
-        res.cookie('token', token, { httpsOnly: true, maxAge: 3600000 }); // Срок действия: 1 час
+        res.cookie('token', token, { httpOnly: true, maxAge: 3600000 });
 
         // Перенаправление в зависимости от роли
         if (user.role === 'Администратор') {
@@ -37,12 +38,20 @@ exports.handleLogin = async (req, res) => {
         } else if (user.role === 'Лаборатория') {
             res.redirect('/dashboard-laboratory.html');
         } else {
-            res.status(403).send('Роль не поддерживается');
+            res.status(403).send(`
+                <script>
+                    alert('Роль не поддерживается.');
+                    window.location.href = '/login';
+                </script>
+            `);
         }
-        
-
     } catch (error) {
         console.error('Ошибка авторизации:', error);
-        res.status(500).json({ message: 'Ошибка сервера' }); // Сообщение об ошибке сервера
+        res.status(500).send(`
+            <script>
+                alert('Ошибка сервера. Попробуйте позже.');
+                window.location.href = '/login';
+            </script>
+        `);
     }
 };
