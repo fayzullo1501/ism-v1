@@ -21,7 +21,7 @@ exports.handleLogin = async (req, res) => {
         const token = jwt.sign(
             { id: user._id, login: user.login, role: user.role },
             JWT_SECRET,
-            { expiresIn: '24h' }
+            { expiresIn: '1h' }
         );
 
         res.cookie('token', token, { httpOnly: true, maxAge: 3600000 });
