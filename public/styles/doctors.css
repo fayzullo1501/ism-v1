@@ -275,6 +275,16 @@
     color: #333;
 }
 
+.form-row select {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #333;
+}
+
+
 
 .modal label {
     display: block;

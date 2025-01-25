@@ -14,7 +14,6 @@ const cashierRoutes = require('./routes/cashier');
 const laboratoryRoutes = require('./routes/laboratory');
 const userRoutes = require('./routes/user'); // Подключаем маршруты для пользователей
 const cookieParser = require('cookie-parser');
-
 const app = express();
 const PORT = 3000;
 

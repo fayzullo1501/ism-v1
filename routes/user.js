@@ -13,6 +13,19 @@ router.get('/', authenticateToken, async (req, res) => {
     }
 });
 
+// Получить список врачей и лаборантов
+router.get('/list', authenticateToken, async (req, res) => {
+    try {
+        // Фильтруем пользователей с ролью "Врач" или "Лаборант"
+        const users = await User.find({ role: { $in: ['Врач', 'Лаборатория'] } }).select('fullName role');
+        res.json(users); // Возвращаем имена и роли
+    } catch (err) {
+        console.error('Ошибка при получении списка пользователей:', err);
+        res.status(500).send('Ошибка сервера');
+    }
+});
+
+
 // Добавить нового пользователя (защищённый маршрут)
 router.post('/', authenticateToken, async (req, res) => {
     const { fullName, login, password, role } = req.body;

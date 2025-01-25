@@ -8,6 +8,7 @@ const doctorSchema = new mongoose.Schema({
     address: { type: String, required: true },
     passport: { type: String, required: true },
     birthDate: { type: Date, required: true },
+    role: { type: String, enum: ['Врач', 'Лаборатория'], required: false }, // Добавлено поле роли
     createdAt: { type: Date, default: Date.now } // Это поле будет включать время
 });
 

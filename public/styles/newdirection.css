@@ -7,3 +7,79 @@
     margin: 20px; /* Внешний отступ от краев экрана */
     min-height: 500px; /* Минимальная высота для белого блока */
 }
+
+
+/* Стили для строки формы */
+.form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+/* Стили для полей ввода и лейблов */
+.form-row label {
+    flex: 0 0 150px; /* Ширина лейбла */
+    font-weight: lighter;
+    font-size: 16px;
+    color: #333;
+}
+
+.form-row input {
+    flex: 1;
+    padding: 10px;
+    margin-right: 500px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #333;
+}
+
+.form-row select {
+    flex: 1;
+    padding: 10px;
+    margin-right: 500px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #333;
+}
+
+
+#saveDirection {
+    background-color: #e94949;
+    font-weight: 100;
+    color: white;
+}
+
+#saveDirection:hover {
+    background-color: #cb1f1f;
+    transform: scale(1.05);
+}
+
+#cancelDirection {
+    background-color: #E6E9F0;
+    font-weight: 100;
+    color: #000;
+}
+
+#cancelDirection:hover {
+    background-color: none;
+    transform: scale(1.05);
+}
+
+.module-actions button {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+
+.module-actions {
+    display: flex;
+    gap: 15px; /* Отступ между кнопками */
+}

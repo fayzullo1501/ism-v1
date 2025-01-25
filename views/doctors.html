@@ -77,7 +77,9 @@
         <form id="addDoctorForm">
             <div class="form-row">
                 <label for="fullName">ФИО врача:</label>
-                <input type="text" name="fullName" id="fullName" placeholder="ФИО" required>
+                <select name="fullName" id="fullName" required>
+                    <option value="" disabled selected>Выберите врача</option>
+                </select>                
             </div>
             <div class="form-row">
                 <label for="specialty">Специальность:</label>
@@ -119,7 +121,9 @@
             <input type="hidden" name="doctorId">
             <div class="form-row">
                 <label for="editFullName">ФИО врача:</label>
-                <input type="text" name="fullName" id="editFullName" placeholder="ФИО" required>
+                <select name="fullName" id="editFullName" required>
+                    <option value="" disabled selected>Выберите врача</option>
+                </select>                
             </div>
             <div class="form-row">
                 <label for="editSpecialty">Специальность:</label>
@@ -156,14 +160,15 @@
 
     <script>
         let selectedDoctorId = null;
-    
+
         // Открытие модального окна для добавления врача
         document.getElementById('addDoctorBtn').addEventListener('click', function () {
             loadSpecialties('specialty'); // Загрузка списка услуг для поля "specialty"
+            loadDoctorsFromUsers('fullName'); // Загрузка списка пользователей для поля "ФИО врача"
             document.getElementById('addDoctorModal').classList.add('show');
             document.getElementById('overlay').classList.add('show');
         });
-    
+
         // Функция загрузки списка услуг для выпадающего списка
         function loadSpecialties(selectId) {
             return fetch('/services/list')
@@ -180,14 +185,39 @@
                 })
                 .catch(error => console.error('Ошибка при загрузке услуг:', error));
         }
-    
+
+        // Функция загрузки списка пользователей для выпадающего списка "ФИО врача"
+        function loadDoctorsFromUsers(selectId) {
+            return fetch('/users/list')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Ошибка при загрузке списка врачей');
+                    }
+                    return response.json();
+                })
+                .then(users => {
+                    const userSelect = document.getElementById(selectId);
+                    userSelect.innerHTML = '<option value="" disabled selected>Выберите врача</option>';
+                    users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.fullName; // Значение для отправки
+                        option.textContent = user.fullName; // Отображаемое значение
+                        userSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Ошибка при загрузке пользователей:', error);
+                    alert('Не удалось загрузить список врачей');
+                });
+        }
+
         // Открытие модального окна для редактирования врача
         document.getElementById('editDoctorBtn').addEventListener('click', function () {
             if (!selectedDoctorId) {
                 alert('Пожалуйста, выберите врача для редактирования');
                 return;
             }
-    
+
             // Загружаем данные врача и список услуг
             fetch(`/doctors/${selectedDoctorId}`)
                 .then(response => response.json())
@@ -195,16 +225,18 @@
                     loadSpecialties('editSpecialty').then(() => {
                         document.querySelector('#editDoctorForm [name="specialty"]').value = doctor.specialty;
                     });
-    
+                    loadDoctorsFromUsers('editFullName').then(() => {
+                        document.querySelector('#editDoctorForm [name="fullName"]').value = doctor.fullName;
+                    });
+
                     // Заполняем остальные поля
                     document.querySelector('#editDoctorForm [name="doctorId"]').value = doctor._id;
-                    document.querySelector('#editDoctorForm [name="fullName"]').value = doctor.fullName;
                     document.querySelector('#editDoctorForm [name="room"]').value = doctor.room;
                     document.querySelector('#editDoctorForm [name="phone"]').value = doctor.phone;
                     document.querySelector('#editDoctorForm [name="address"]').value = doctor.address;
                     document.querySelector('#editDoctorForm [name="passport"]').value = doctor.passport;
                     document.querySelector('#editDoctorForm [name="birthDate"]').value = doctor.birthDate.split('T')[0];
-    
+
                     document.getElementById('editDoctorModal').classList.add('show');
                     document.getElementById('overlay').classList.add('show');
                 })
@@ -213,16 +245,16 @@
                     console.error(error);
                 });
         });
-    
+
         // Закрытие модальных окон при нажатии на overlay
         document.getElementById('overlay').addEventListener('click', closeModal);
         document.querySelectorAll('.btn-cancel').forEach(button => button.addEventListener('click', closeModal));
-    
+
         function closeModal() {
             document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('show'));
             document.getElementById('overlay').classList.remove('show');
         }
-    
+
         // Обработка добавления врача
         document.getElementById('addDoctorForm').addEventListener('submit', function (e) {
             e.preventDefault();
@@ -242,7 +274,7 @@
                     console.error(error);
                 });
         });
-    
+
         // Обработка изменения врача
         document.getElementById('editDoctorForm').addEventListener('submit', function (e) {
             e.preventDefault();
@@ -262,7 +294,7 @@
                     console.error(error);
                 });
         });
-    
+
         // Удаление врача
         document.getElementById('deleteDoctorBtn').addEventListener('click', function () {
             const selectedCheckboxes = document.querySelectorAll('#doctorsTableBody input[type="checkbox"]:checked');
@@ -270,13 +302,13 @@
                 alert('Пожалуйста, выберите хотя бы одного врача для удаления');
                 return;
             }
-    
+
             if (confirm('Вы действительно хотите удалить выбранных врачей?')) {
                 const deletePromises = Array.from(selectedCheckboxes).map(checkbox => {
                     const doctorId = checkbox.dataset.doctorId;
                     return fetch(`/doctors/delete/${doctorId}`, { method: 'DELETE' });
                 });
-    
+
                 Promise.all(deletePromises)
                     .then(responses => Promise.all(responses.map(response => response.json())))
                     .then(data => {
@@ -289,7 +321,7 @@
                     });
             }
         });
-    
+
         // Обработка события клика по чекбоксам в таблице врачей
         document.getElementById('doctorsTableBody').addEventListener('click', function (e) {
             if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
@@ -298,7 +330,7 @@
                 document.getElementById('deleteDoctorBtn').disabled = !document.querySelector('#doctorsTableBody input[type="checkbox"]:checked');
             }
         });
-    
+
         // Загрузка списка врачей
         function loadDoctors(searchQuery = '', page = 1) {
             fetch('/doctors/list')
@@ -316,10 +348,10 @@
                             doctor.passport.toLowerCase().includes(searchQuery)
                         );
                     });
-    
+
                     const startIndex = (page - 1) * 15;
                     const doctorsToShow = filteredDoctors.slice(startIndex, startIndex + 15);
-    
+
                     doctorsToShow.forEach((doctor, index) => {
                         const row = `
                             <tr>
@@ -336,17 +368,17 @@
                             </tr>`;
                         doctorsTableBody.insertAdjacentHTML('beforeend', row);
                     });
-    
+
                     updatePaginationButtons(filteredDoctors.length, page);
                 });
         }
-    
+
         // Обновление кнопок пагинации
         function updatePaginationButtons(totalRecords, currentPage) {
             const paginationContainer = document.getElementById('pagination');
             paginationContainer.innerHTML = '';
             const totalPages = Math.ceil(totalRecords / 15);
-    
+
             for (let i = 1; i <= totalPages; i++) {
                 const pageButton = document.createElement('button');
                 pageButton.textContent = i;
@@ -356,7 +388,7 @@
                 paginationContainer.appendChild(pageButton);
             }
         }
-    
+
         // Инициализация
         loadDoctors();
         document.getElementById('searchInput').addEventListener('input', function () {
