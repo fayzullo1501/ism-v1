@@ -59,7 +59,7 @@
                                 <th>Телефон</th>
                                 <th>Адрес</th>
                                 <th>Дата регистрации</th>
-                                <th>Инфо</th>
+                                <th>История</th>
                             </tr>
                         </thead>
                         <tbody id="patientsTableBody">
@@ -345,7 +345,7 @@
                             <td>${patient.phone}</td>
                             <td>${patient.address}</td>
                             <td>${registrationDate}</td>
-                            <td><button class="infoBtn">Подробнее</button></td>
+                            <td><button class="infoBtn" data-patient-id="${patient._id}">Подробнее</button></td>
                         `;
                         patientsTableBody.appendChild(row);
                     });
@@ -353,11 +353,13 @@
                     // Обновляем кнопки пагинации
                     updatePaginationButtons(filteredPatients.length, page);
     
-                    document.querySelectorAll('.infoBtn').forEach(button => {
-                        button.addEventListener('click', function() {
-                            document.getElementById('infoModal').classList.add('show');
-                            document.getElementById('overlay').classList.add('show');
-                        });
+                    document.addEventListener('click', function (e) {
+                        if (e.target.classList.contains('infoBtn')) {
+                            const patientId = e.target.getAttribute('data-patient-id');
+                            if (patientId) {
+                                window.location.href = `history.html?patientId=${patientId}`;
+                            }
+                        }
                     });
                 });
         }

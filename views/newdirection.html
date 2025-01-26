@@ -379,10 +379,13 @@
                 const directionData = {
                     patientId,
                     serviceName: serviceSelect.options[serviceSelect.selectedIndex]?.textContent || '',
-                    serviceType: serviceCategorySelect.options[serviceCategorySelect.selectedIndex]?.textContent || '', // Добавлено поле serviceType
+                    serviceType: serviceCategorySelect.options[serviceCategorySelect.selectedIndex]?.textContent || '', 
                     doctorName: doctorSelect.options[doctorSelect.selectedIndex]?.textContent || '',
                     roomNumber: roomNumberInput.value || '',
                     wardNumber: wardNumberSelect.options[wardNumberSelect.selectedIndex]?.value || '',
+                    wardType: wardTypeSelect.options[wardTypeSelect.selectedIndex]?.textContent || '', // Добавлено поле
+                    wardCapacity: parseInt(wardCapacitySelect.value) || 1, // Добавлено поле
+                    wardDays: parseInt(wardDaysSelect.value) || 1, // Добавлено поле
                     totalPrice: parseFloat(totalPriceElement.textContent.replace(/\D/g, '')) || 0,
                 };
 

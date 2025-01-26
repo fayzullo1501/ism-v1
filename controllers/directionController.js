@@ -1,10 +1,11 @@
 const Direction = require('../models/directionModel');
 const Patient = require('../models/patientModel'); // Модель пациента
+const History = require('../models/historyModel'); // Импорт модели истории
 
 // Контроллер для добавления направления
 exports.addDirection = async (req, res) => {
     try {
-        const { patientId, serviceName, serviceType, doctorName, wardNumber, wardDays, wardCapacity, roomNumber, totalPrice } = req.body;
+        const { patientId, serviceName, serviceType, doctorName, wardNumber, wardDays, wardCapacity, wardType, roomNumber, totalPrice } = req.body;
 
         // Проверка существования пациента
         const patientExists = await Patient.findById(patientId);
@@ -27,13 +28,32 @@ exports.addDirection = async (req, res) => {
             doctorName: doctorName || 'Не указано',
             roomNumber: roomNumber || 'Не указано',
             wardNumber: wardNumber || 'Не указано',
+            wardType: wardType|| 'Не указано',
             wardDays: parsedWardDays,
             wardCapacity: parsedWardCapacity,
             totalPrice: calculatedTotalPrice,
         });
 
-        await newDirection.save();
-        res.status(201).json({ message: 'Направление успешно создано', direction: newDirection });
+        const savedDirection = await newDirection.save();
+
+        // Сохранение данных в историю пациента
+        const historyData = {
+            patientId: savedDirection.patientId,
+            serviceName: savedDirection.serviceName,
+            serviceType: savedDirection.serviceType,
+            doctorName: savedDirection.doctorName,
+            roomNumber: savedDirection.roomNumber,
+            wardNumber: savedDirection.wardNumber,
+            wardType: savedDirection.wardType,
+            wardDays: savedDirection.wardDays,
+            wardCapacity: savedDirection.wardCapacity,
+            totalPrice: savedDirection.totalPrice,
+        };
+
+        const newHistory = new History(historyData);
+        await newHistory.save();
+
+        res.status(201).json({ message: 'Направление и история успешно созданы', direction: savedDirection });
     } catch (error) {
         console.error('Ошибка при создании направления:', error);
         res.status(500).json({ message: 'Ошибка сервера', error });
@@ -45,7 +65,7 @@ exports.getDirections = async (req, res) => {
     try {
         const directions = await Direction.find()
             .populate('patientId', 'fullName birthDate passport phone')
-            .select('serviceName serviceType doctorName roomNumber wardNumber totalPrice paid updatedAt') // Добавлены поля
+            .select('serviceName serviceType doctorName roomNumber wardType wardNumber totalPrice paid updatedAt') // Добавлены поля
             .sort({ createdAt: -1 });
 
         res.status(200).json(directions);
@@ -84,7 +104,7 @@ exports.getDirectionById = async (req, res) => {
 
         const direction = await Direction.findById(id)
             .populate('patientId', 'fullName birthDate passport phone')
-            .select('serviceName serviceType doctorName roomNumber wardNumber totalPrice paid updatedAt'); // Добавлены поля
+            .select('serviceName serviceType doctorName roomNumber wardType wardNumber totalPrice paid updatedAt'); // Добавлены поля
 
         if (!direction) {
             return res.status(404).json({ message: 'Направление не найдено' });

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const directionSchema = new mongoose.Schema({
+const historySchema = new mongoose.Schema({
     patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true },
     serviceName: { type: String, default: '' },
     serviceType: { type: String, default: '' }, // Категория услуги
@@ -11,8 +11,8 @@ const directionSchema = new mongoose.Schema({
     wardType: { type: String, default: '' },
     wardCapacity: { type: Number, default: 1 },
     totalPrice: { type: Number, default: 0 },
-    paid: { type: Boolean, default: false },
-    updatedAt: { type: Date, default: Date.now }, // Дата обновления
+    result: { type: String, default: 'Нет данных' }, // Новое поле для результата
+    createdAt: { type: Date, default: Date.now }, // Дата создания
 });
 
-module.exports = mongoose.model('Direction', directionSchema);
+module.exports = mongoose.model('History', historySchema);

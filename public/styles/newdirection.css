@@ -19,7 +19,7 @@
 
 /* Стили для полей ввода и лейблов */
 .form-row label {
-    flex: 0 0 150px; /* Ширина лейбла */
+    flex: 0 0 170px; /* Ширина лейбла */
     font-weight: lighter;
     font-size: 16px;
     color: #333;
