@@ -5,6 +5,7 @@ const directionSchema = new mongoose.Schema({
     serviceName: { type: String, default: '' },
     serviceType: { type: String, default: '' }, // Категория услуги
     doctorName: { type: String, default: '' },
+    doctorRole: { type: String, enum: ['Врач', 'Лаборатория'], default: 'Врач' }, // Новое поле для роли врача
     roomNumber: { type: String, default: '' },
     wardNumber: { type: String, default: '' },
     wardDays: { type: Number, default: 1 },

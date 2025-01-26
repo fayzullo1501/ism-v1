@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Врачи - Пациенты</title>
+    <link rel="stylesheet" href="/styles/dashboard-admin.css">
+    <link rel="stylesheet" href="/styles/laboratory.css">
+    <link rel="stylesheet" href="/styles/editor.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="icon" href="/images/favicon.svg" type="image/png">
+</head>
+<body>
+    <div class="container">
+        <!-- Левая панель с меню -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="/images/logo.png" alt="Клиника" class="logo-img">
+            </div>
+            <ul class="menu">
+                <li><a href="dashboard-doctor.html"><i class="fas fa-home"></i> Главная</a></li>
+                <li><a href="patients-doctor.html" class="active"><i class="fas fa-user-injured"></i> Пациенты</a></li>
+            </ul>
+            <div class="logout">
+                <a href="#" id="logoutButton"><i class="fas fa-sign-out-alt"></i> Выход</a>
+            </div>            
+        </div>
+    
+        <!-- Правая панель с таблицей пациентов -->
+        <div class="main-content">
+            <div class="module-header">
+                <h1>Добавить Вывод пациенту</h1>
+            </div>
+            <div class="module-content">
+                <!-- Форма выбора услуги и кнопка Сохранить -->
+                <div class="actions">
+                    <div class="action-buttons">
+                        <select id="serviceSelect" class="form-control">
+                            <option value=""> Выберите тип услуги </option>
+                            <!-- Услуги будут загружаться динамически -->
+                        </select>
+                        <button id="saveButton" disabled>Сохранить</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Пространство для редактора -->
+            <div id="editorSpace" class="editor-space" style="position: relative; padding: 0;">
+                <p>Выберите услугу, чтобы отобразить шаблон.</p>
+            </div>
+        </div>
+
+        
+          
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const serviceSelect = document.getElementById('serviceSelect');
+            const editorSpace = document.getElementById('editorSpace');
+            const saveButton = document.getElementById('saveButton');
+            const patientTableBody = document.querySelector('#patientTableBody');
+    
+            // Получение текущей даты в формате ДД.ММ.ГГГГ
+            function getCurrentDate() {
+                const now = new Date();
+                return now.toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+            }
+    
+            // Получение recordId из URL
+            function getRecordIdFromURL() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get("recordId");
+            }
+    
+            // Загрузка данных направления по recordId
+            async function loadDirectionData(recordId) {
+                try {
+                    const response = await fetch(`/doctor/directions/${recordId}`);
+                    if (!response.ok) throw new Error("Ошибка загрузки данных направления");
+    
+                    const direction = await response.json();
+                    const patient = direction.patientId;
+    
+                    if (patient) {
+                        updatePatientTable(patient);
+                    } else {
+                        console.error("Данные пациента отсутствуют в направлении.");
+                    }
+                } catch (error) {
+                    console.error("Ошибка загрузки данных направления:", error);
+                }
+            }
+    
+            // Обновление таблицы пациента
+            function updatePatientTable(patient) {
+                const printDate = getCurrentDate();
+    
+                if (patientTableBody) {
+                    patientTableBody.innerHTML = `
+                        <tr>
+                            <td style="border: 1px solid #000; padding: 8px;">${patient.fullName}</td>
+                            <td style="border: 1px solid #000; padding: 8px;">${new Date(patient.birthDate).toLocaleDateString('ru-RU')}</td>
+                            <td style="border: 1px solid #000; padding: 8px;">${patient.phone || 'Не указано'}</td>
+                            <td style="border: 1px solid #000; padding: 8px;">${printDate}</td>
+                        </tr>
+                    `;
+                }
+            }
+    
+            // Загрузка списка услуг с сервера
+            async function loadServices() {
+                try {
+                    const response = await fetch('/services/list');
+                    const services = await response.json();
+    
+                    if (Array.isArray(services) && services.length > 0) {
+                        services.forEach(service => {
+                            const option = document.createElement('option');
+                            option.value = service._id;
+                            option.textContent = service.serviceName;
+                            serviceSelect.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Ошибка при загрузке услуг:', error);
+                }
+            }
+    
+            // Загрузка шаблона для определенной услуги
+            function loadTemplateForService(serviceId) {
+                const templates = {
+                    '677cb177de5c3701801b5996': '/results-templates/analys-test-1.html',
+                    '677cb165de5c3701801b5993': '/results-templates/analys-test-2.html',
+                    '677cb15ade5c3701801b5990': '/results-templates/analys-test-3.html',
+                };
+    
+                const templatePath = templates[serviceId];
+    
+                if (templatePath) {
+                    fetch(templatePath)
+                        .then(response => response.text())
+                        .then(html => {
+                            editorSpace.innerHTML = html;
+    
+                            // После загрузки шаблона загрузить данные пациента
+                            const recordId = getRecordIdFromURL();
+                            if (recordId) {
+                                loadDirectionData(recordId);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Ошибка при загрузке шаблона:', error);
+                            editorSpace.innerHTML = '<p>Ошибка загрузки шаблона.</p>';
+                        });
+                } else {
+                    editorSpace.innerHTML = '<p>Пожалуйста, выберите услугу, чтобы увидеть шаблон.</p>';
+                }
+            }
+    
+            // Обработка выбора услуги
+            serviceSelect.addEventListener('change', function () {
+                const selectedServiceId = this.value;
+    
+                if (selectedServiceId) {
+                    loadTemplateForService(selectedServiceId);
+                    saveButton.disabled = false;
+                } else {
+                    editorSpace.innerHTML = '<p>Пожалуйста, выберите услугу, чтобы увидеть шаблон.</p>';
+                    saveButton.disabled = true;
+                }
+            });
+    
+            // Сохранение в PDF
+            saveButton.addEventListener('click', function () {
+                const { jsPDF } = window.jspdf;
+    
+                // Замена полей ввода на текст
+                const inputs = editorSpace.querySelectorAll('input[type="text"]');
+                inputs.forEach(input => {
+                    const value = input.value;
+                    const span = document.createElement('span');
+                    span.textContent = value;
+                    span.style.display = 'block';
+                    span.style.textAlign = 'center';
+                    input.parentElement.replaceChild(span, input);
+                });
+    
+                // Создание PDF с помощью html2canvas
+                html2canvas(editorSpace, { scale: 2 }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+    
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    
+                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                    pdf.save('Результат.pdf');
+                });
+            });
+    
+            // Инициализация страницы
+            const recordId = getRecordIdFromURL();
+            if (recordId) {
+                loadDirectionData(recordId);
+            }
+    
+            // Загрузка списка услуг при инициализации
+            loadServices();
+        });
+    </script>
+    
+    <script src="/js/logout.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+</body>
+</html>

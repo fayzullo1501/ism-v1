@@ -1,16 +1,34 @@
 const Direction = require('../models/directionModel');
 const Patient = require('../models/patientModel'); // Модель пациента
+const User = require('../models/userModel'); // Импорт модели пользователя
 const History = require('../models/historyModel'); // Импорт модели истории
 
 // Контроллер для добавления направления
 exports.addDirection = async (req, res) => {
     try {
-        const { patientId, serviceName, serviceType, doctorName, wardNumber, wardDays, wardCapacity, wardType, roomNumber, totalPrice } = req.body;
+        const { 
+            patientId, 
+            serviceName, 
+            serviceType, 
+            doctorName, 
+            wardNumber, 
+            wardDays, 
+            wardCapacity, 
+            wardType, 
+            roomNumber, 
+            totalPrice 
+        } = req.body;
 
         // Проверка существования пациента
         const patientExists = await Patient.findById(patientId);
         if (!patientExists) {
             return res.status(404).json({ message: 'Пациент не найден' });
+        }
+
+        // Поиск врача по имени
+        const doctor = await User.findOne({ fullName: doctorName });
+        if (!doctor || (doctor.role !== 'Врач' && doctor.role !== 'Лаборатория')) {
+            return res.status(400).json({ message: 'Врач с указанным именем не найден или имеет некорректную роль' });
         }
 
         // Приведение данных и расчет общей стоимости
@@ -26,9 +44,10 @@ exports.addDirection = async (req, res) => {
             serviceName: serviceName || 'Не указано',
             serviceType: serviceType || 'Не указано', // Добавлено поле
             doctorName: doctorName || 'Не указано',
+            doctorRole: doctor.role, // Добавлено поле doctorRole
             roomNumber: roomNumber || 'Не указано',
             wardNumber: wardNumber || 'Не указано',
-            wardType: wardType|| 'Не указано',
+            wardType: wardType || 'Не указано',
             wardDays: parsedWardDays,
             wardCapacity: parsedWardCapacity,
             totalPrice: calculatedTotalPrice,
@@ -42,6 +61,7 @@ exports.addDirection = async (req, res) => {
             serviceName: savedDirection.serviceName,
             serviceType: savedDirection.serviceType,
             doctorName: savedDirection.doctorName,
+            doctorRole: savedDirection.doctorRole, // Добавлено поле doctorRole
             roomNumber: savedDirection.roomNumber,
             wardNumber: savedDirection.wardNumber,
             wardType: savedDirection.wardType,

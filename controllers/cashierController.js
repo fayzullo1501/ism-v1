@@ -1,4 +1,5 @@
 const Laboratory = require('../models/laboratoryModel');
+const DoctorDirection = require('../models/patientsdoctorModel');
 const Direction = require('../models/directionModel');
 
 // Получить направления для кассы
@@ -44,27 +45,60 @@ exports.updatePaymentStatus = async (req, res) => {
     try {
         const { id } = req.params;
 
+        // Найти направление
         const direction = await Direction.findById(id);
 
         if (!direction) {
             return res.status(404).json({ message: 'Направление не найдено' });
         }
 
-        // Обновляем статус оплаты
+        // Обновить статус оплаты
         direction.paid = true;
-        direction.updatedAt = new Date(); // Обновляем дату изменения
+        direction.updatedAt = new Date(); // Обновить дату изменения
+        await direction.save();
 
-        const updatedDirection = await direction.save();
+        // Проверить роль врача
+        const doctorRole = direction.doctorRole;
+
+        if (doctorRole === 'Лаборатория') {
+            // Отправка в панель лаборатории
+            const laboratoryData = {
+                patientId: direction.patientId,
+                serviceName: direction.serviceName,
+                serviceType: direction.serviceType,
+                doctorName: direction.doctorName,
+                roomNumber: direction.roomNumber,
+                wardNumber: direction.wardNumber,
+                totalPrice: direction.totalPrice,
+            };
+
+            // Сохранить данные в лабораторию
+            await Laboratory.create(laboratoryData);
+        } else if (doctorRole === 'Врач') {
+            // Отправка в панель врачей (логика аналогична)
+            const doctorData = {
+                patientId: direction.patientId,
+                serviceName: direction.serviceName,
+                serviceType: direction.serviceType,
+                doctorName: direction.doctorName, // Имя врача
+                roomNumber: direction.roomNumber,
+                wardNumber: direction.wardNumber,
+                totalPrice: direction.totalPrice,
+            };
+            // Сохранить данные в панель врача
+            await DoctorDirection.create(doctorData);
+        }
 
         res.status(200).json({
-            message: 'Статус оплаты успешно обновлен.',
-            direction: updatedDirection,
+            message: 'Статус оплаты обновлен и данные отправлены в соответствующую панель.',
+            direction,
         });
     } catch (error) {
         console.error('Ошибка при обновлении статуса оплаты:', error);
         res.status(500).json({ message: 'Ошибка сервера', error });
     }
 };
+
 
 // Создать новое направление (если необходимо)
 exports.createDirection = async (req, res) => {

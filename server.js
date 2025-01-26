@@ -12,6 +12,7 @@ const doctorRoutes = require('./routes/doctor'); // Маршрут для вра
 const directionRoutes = require('./routes/direction');
 const cashierRoutes = require('./routes/cashier');
 const laboratoryRoutes = require('./routes/laboratory');
+const patientsDoctorRoutes = require('./routes/patientsdoctorRoutes'); // Подключаем маршруты для пациентов-врача
 const historyRoutes = require('./routes/history');
 const userRoutes = require('./routes/user'); // Подключаем маршруты для пользователей
 const cookieParser = require('cookie-parser');
@@ -62,6 +63,7 @@ app.use('/directions', directionRoutes); // Защита маршрута
 app.use('/services', serviceRoutes); // Подключение маршрута для услуг
 app.use('/wards', wardRoutes); // Подключение маршрута для палат
 app.use('/doctors', doctorRoutes); // Подключение маршрута для врачей
+app.use('/doctor', patientsDoctorRoutes); // Добавляем маршруты для панели врача
 app.use('/auth', authRoutes);
 
 
