@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ крови</title>
+    <link rel="stylesheet" href="results-templates/analys-test-2.css">
+</head>
+<body>
+    <div class="editor-content">
+        <div class="header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+            <div class="header-left" style="text-align: left; color: #000;">
+                <p style="margin: 0;">Фаргона шахар, Киргили</p>
+                <p style="margin: 0;">мавзеси, Янги сар кўчаси</p>
+                <p style="margin: 0;">76Б-уй. Мулжал: Пеликан</p>
+                <p style="margin: 0;">Дехкон бозори енди.</p>
+            </div>
+            <div class="header-center">
+                <img src="/images/logo-dark.png" alt="Логотип" style="max-width: 200px;">
+            </div>
+            <div class="header-right" style="text-align: right; color: #000;">
+                <p style="margin: 0;">Лаборатория +998 55 802-03-01</p>
+                <p style="margin: 0;">Кабулхона +998 55 801-03-01</p>
+                <p style="margin: 0;">Кабулхона +998 95 302-03-01</p>
+            </div>
+        </div>        
+        <div class="patient-info" style="color: #000;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid #000; padding: 8px;">ФИО пациента</th>
+                        <th style="border: 1px solid #000; padding: 8px;">Дата рождения</th>
+                        <th style="border: 1px solid #000; padding: 8px;">Адрес и телефон</th>
+                        <th style="border: 1px solid #000; padding: 8px;">Дата печати</th>
+                    </tr>
+                </thead>
+                <tbody id="patientTableBody">
+                    <!-- Здесь будут динамически добавляться данные -->
+                </tbody>
+            </table>
+        </div>        
+        <div class="analysis-table" style="color: #000;">            
+            <table style="width: 100%; border-collapse: collapse; text-align: left; border: 1px solid black; font-family: Arial, sans-serif;">
+                <thead>
+                    <tr>
+                        <th colspan="2" style="border: 1px solid black; padding: 10px; text-align: center; font-weight: bold;">Баённома</th>
+                    </tr>
+                    <tr>
+                        <th colspan="2" style="border: 1px solid black; padding: 10px; text-align: center; font-weight: bold;">Буйраклар ультраовуш текшируви</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Ўнг буйрак -->
+                    <tr>
+                        <td colspan="2" style="border: 1px solid black; padding: 10px;"><b>Ўнг буйрак:</b> Шакли 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">. Контурлари 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">. Ўлчови узунлиги 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"> мм (Н:90-120мм гача), эни 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"> мм (Н:50мм гача). Паренхима қалинлиги 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"> мм (Н:14-20мм гача). Паренхима эхогенлиги 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"> (Н:0-1) даража. Косача жом тизими 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"> см гача акустик соя берадиган қайткиликлар 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">, деформацияланмаган. Буйрак атрофи тукимаси 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">. Нафас харакатчанлиги 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">.
+                        </td>
+                    </tr>
+            
+                    <!-- Чап буйрак -->
+                    <tr>
+                        <td colspan="2" style="border: 1px solid black; padding: 10px;"><b>Чап буйрак:</b> Шакли 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">. Контурлари 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">. Ўлчови узунлиги 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"> мм (Н:90-120мм гача), эни 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"> мм (Н:50мм гача). Паренхима қалинлиги 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"> мм (Н:14-20мм гача). Паренхима эхогенлиги 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"> (Н:0-1) даража. Косача жом тизими 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"> см гача акустик соя берадиган қайткиликлар 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">. Буйрак атрофи тукимаси 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">. Нафас харакатчанлиги 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">.
+                        </td>
+                    </tr>
+            
+                    <!-- Сийдик копчаси -->
+                    <tr>
+                        <td colspan="2" style="border: 1px solid black; padding: 10px;"><b>Сийдик копчаси:</b> Ўртача тулган хажми 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"> мл. Контурлари 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">, девори 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">, қалинлашмаган 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"> мм (Н:6мм гача), бўшлиги 
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">.
+                        </td>
+                    </tr>
+            
+                    <!-- Хулоса -->
+                    <tr>
+                        <td style="border: 1px solid black; padding: 10px; width: 10px;"><b>Хулоса:</b></td>
+                        <td style="border: 1px solid black; padding: 10px;"><input type="text" style="border: none; border-bottom: 1px solid red; background-color: #f9f9f9; width: 100%;"></td>
+                    </tr>
+            
+                    <!-- Тавсия -->
+                    <tr>
+                        <td style="border: 1px solid black; padding: 10px; width: 10px;"><b>Тавсия:</b></td>
+                        <td style="border: 1px solid black; padding: 10px;"><input type="text" style="border: none; border-bottom: 1px solid red; background-color: #f9f9f9; width: 100%;"></td>
+                    </tr>
+                </tbody>
+            </table>                    
+        </div>        
+    </div>
+    
+</body>
+</html>

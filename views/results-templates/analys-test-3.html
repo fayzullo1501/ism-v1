@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ крови</title>
+    <link rel="stylesheet" href="results-templates/analys-test-2.css">
+</head>
+<body>
+    <div class="editor-content">
+        <div class="header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+            <div class="header-left" style="text-align: left; color: #000;">
+                <p style="margin: 0;">Фаргона шахар, Киргили</p>
+                <p style="margin: 0;">мавзеси, Янги сар кўчаси</p>
+                <p style="margin: 0;">76Б-уй. Мулжал: Пеликан</p>
+                <p style="margin: 0;">Дехкон бозори енди.</p>
+            </div>
+            <div class="header-center">
+                <img src="/images/logo-dark.png" alt="Логотип" style="max-width: 200px;">
+            </div>
+            <div class="header-right" style="text-align: right; color: #000;">
+                <p style="margin: 0;">Лаборатория +998 55 802-03-01</p>
+                <p style="margin: 0;">Кабулхона +998 55 801-03-01</p>
+                <p style="margin: 0;">Кабулхона +998 95 302-03-01</p>
+            </div>
+        </div>        
+        <div class="patient-info" style="color: #000;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid #000; padding: 8px;">ФИО пациента</th>
+                        <th style="border: 1px solid #000; padding: 8px;">Дата рождения</th>
+                        <th style="border: 1px solid #000; padding: 8px;">Адрес и телефон</th>
+                        <th style="border: 1px solid #000; padding: 8px;">Дата печати</th>
+                    </tr>
+                </thead>
+                <tbody id="patientTableBody">
+                    <!-- Здесь будут динамически добавляться данные -->
+                </tbody>
+            </table>
+        </div>        
+        <div class="analysis-table" style="color: #000;">            
+            <table style="width: 100%; border-collapse: collapse; text-align: left; border: 1px solid black; font-family: Arial, sans-serif;">
+                <thead>
+                    <tr>
+                        <th colspan="4" style="border: 1px solid black; padding: 10px; text-align: center; font-weight: bold;">Умумий сийдик тахлили</th>
+                    </tr>
+                    <tr>
+                        <th style="border: 1px solid #000; padding: 8px; width: 5px;">№</th>
+                        <th style="border: 1px solid #000; padding: 8px;">Кўрсаткич</th>
+                        <th style="border: 1px solid #000; padding: 8px;">Натижа</th>
+                        <th style="border: 1px solid #000; padding: 8px;">Норма</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 8px;">1</td>
+                        <td style="border: 1px solid #000; padding: 8px;">Кол-во</td>
+                        <td style="border: 1px solid #000; padding: 8px;"><input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"></td>
+                        <td style="border: 1px solid #000; padding: 8px;">м/л</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 8px;">2</td>
+                        <td style="border: 1px solid #000; padding: 8px;">Цвет</td>
+                        <td style="border: 1px solid #000; padding: 8px;"><input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"></td>
+                        <td style="border: 1px solid #000; padding: 8px;">соломонно-желтый</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 8px;">3</td>
+                        <td style="border: 1px solid #000; padding: 8px;">Прозрачность</td>
+                        <td style="border: 1px solid #000; padding: 8px;"><input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"></td>
+                        <td style="border: 1px solid #000; padding: 8px;">Прозрачная</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 8px;">4</td>
+                        <td style="border: 1px solid #000; padding: 8px;">Уробилиноген</td>
+                        <td style="border: 1px solid #000; padding: 8px;"><input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"></td>
+                        <td style="border: 1px solid #000; padding: 8px;">&lt; 3.3 mkmol/l</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 8px;">5</td>
+                        <td style="border: 1px solid #000; padding: 8px;">Билирубин</td>
+                        <td style="border: 1px solid #000; padding: 8px;"><input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"></td>
+                        <td style="border: 1px solid #000; padding: 8px;">abs</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 8px;">6</td>
+                        <td style="border: 1px solid #000; padding: 8px;">Кетоновые тело</td>
+                        <td style="border: 1px solid #000; padding: 8px;"><input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"></td>
+                        <td style="border: 1px solid #000; padding: 8px;">abs</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 8px;">7</td>
+                        <td style="border: 1px solid #000; padding: 8px;">Белок</td>
+                        <td style="border: 1px solid #000; padding: 8px;"><input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"></td>
+                        <td style="border: 1px solid #000; padding: 8px;">abs</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 8px;">8</td>
+                        <td style="border: 1px solid #000; padding: 8px;">Нитриты</td>
+                        <td style="border: 1px solid #000; padding: 8px;"><input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"></td>
+                        <td style="border: 1px solid #000; padding: 8px;">abs</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 8px;">9</td>
+                        <td style="border: 1px solid #000; padding: 8px;">глюкоза</td>
+                        <td style="border: 1px solid #000; padding: 8px;"><input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"></td>
+                        <td style="border: 1px solid #000; padding: 8px;">0,0-2,8 ммоль/сут</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 8px;">10</td>
+                        <td style="border: 1px solid #000; padding: 8px;">Относительная плотность</td>
+                        <td style="border: 1px solid #000; padding: 8px;"><input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"></td>
+                        <td style="border: 1px solid #000; padding: 8px;">1012-1020</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 8px;">11</td>
+                        <td style="border: 1px solid #000; padding: 8px;">pH</td>
+                        <td style="border: 1px solid #000; padding: 8px;"><input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"></td>
+                        <td style="border: 1px solid #000; padding: 8px;">5,0-6,5</td>
+                    </tr>
+                </tbody>
+            </table> 
+            <table style="width: 100%; border-collapse: collapse; text-align: left; border: 1px solid black; font-family: Arial, sans-serif;">
+                <tbody>
+                    <tr>
+                        <td style="width: 15%; text-align: center; vertical-align: middle;">Эпителий</td>
+                        <td style="border: 1px solid #000; padding: 8px; width: 33.1%;">Плоский</td>
+                        <td style="border: 1px solid #000; padding: 8px; width: 18.8%;">
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">
+                        </td>
+                        <td style="border: 1px solid #000; padding: 8px;">0-5 в п/зр</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td style="border: 1px solid #000; padding: 8px;">Переходный</td>
+                        <td style="border: 1px solid #000; padding: 8px;">
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">
+                        </td>
+                        <td style="border: 1px solid #000; padding: 8px;">abs</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td style="border: 1px solid #000; padding: 8px;">Почечный</td>
+                        <td style="border: 1px solid #000; padding: 8px;">
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">
+                        </td>
+                        <td style="border: 1px solid #000; padding: 8px;">abs</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="border: 1px solid #000; padding: 8px;">Лейкоциты</td>
+                        <td style="border: 1px solid #000; padding: 8px;"><input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;"></td>
+                        <td style="border: 1px solid #000; padding: 8px;">муж. ст. 18л. 0-3 в п/зр<br>жен. ст. 18л. 0-5 в п/зр<br>мал. до 1 года 0-5 в п/зр<br>дев. до 18л. 0-7 в п/зр</td>                         
+                    </tr>
+                    <tr>
+                        <td style="width: 15%; text-align: center; vertical-align: middle;">Эритроциты</td>
+                        <td style="border: 1px solid #000; padding: 8px; width: 33.1%;">Неизмененные</td>
+                        <td style="border: 1px solid #000; padding: 8px; width: 18.8%;">
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">
+                        </td>
+                        <td style="border: 1px solid #000; padding: 8px;">0-3 в п/зр</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td style="border: 1px solid #000; padding: 8px;">Измененные</td>
+                        <td style="border: 1px solid #000; padding: 8px;">
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">
+                        </td>
+                        <td style="border: 1px solid #000; padding: 8px;">0-1 в п/зр</td>
+                    </tr>
+                    <tr>
+                        <td style="width: 15%; text-align: center; vertical-align: middle;">Цилиндры</td>
+                        <td style="border: 1px solid #000; padding: 8px; width: 33.1%;">Гиалиновые</td>
+                        <td style="border: 1px solid #000; padding: 8px; width: 18.8%;">
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">
+                        </td>
+                        <td style="border: 1px solid #000; padding: 8px;">abs</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td style="border: 1px solid #000; padding: 8px;">Зернистые</td>
+                        <td style="border: 1px solid #000; padding: 8px;">
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">
+                        </td>
+                        <td style="border: 1px solid #000; padding: 8px;">abs</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td style="border: 1px solid #000; padding: 8px;">Восковидные</td>
+                        <td style="border: 1px solid #000; padding: 8px;">
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">
+                        </td>
+                        <td style="border: 1px solid #000; padding: 8px;">abs</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td style="border: 1px solid #000; padding: 8px;">Эритроцитарные</td>
+                        <td style="border: 1px solid #000; padding: 8px;">
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">
+                        </td>
+                        <td style="border: 1px solid #000; padding: 8px;">abs</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td style="border: 1px solid #000; padding: 8px;">Жирнозернистые</td>
+                        <td style="border: 1px solid #000; padding: 8px;">
+                            <input type="text" style="border: none; border-bottom: 1px solid red; width: 60px; background-color: #f9f9f9;">
+                        </td>
+                        <td style="border: 1px solid #000; padding: 8px;">abs</td>
+                    </tr>
+                </tbody>
+            </table>                   
+        </div>        
+    </div>
+    
+</body>
+</html>

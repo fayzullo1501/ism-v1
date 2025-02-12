@@ -1,7 +1,7 @@
 /* Контейнер редактора */
 .editor-space {
   width: 210mm; /* Ширина A4 */
-  height: 297mm; /* Высота A4 */
+  height: 500mm; /* Высота A4 */
   margin: 20px auto; /* Центрирование по горизонтали и отступ сверху/снизу */
   margin-bottom: 50px;
   background-color: #f9f9f9; /* Светлый фон */

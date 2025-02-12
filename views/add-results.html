@@ -178,29 +178,31 @@
             // Сохранение в PDF
             saveButton.addEventListener('click', function () {
                 const { jsPDF } = window.jspdf;
-    
-                // Заменяем поля ввода на текст
-                const inputs = editorSpace.querySelectorAll('input[type="text"]');
+
+                // Временное удаление границ input перед сохранением
+                const inputs = editorSpace.querySelectorAll('input');
                 inputs.forEach(input => {
-                    const value = input.value;
-                    const span = document.createElement('span');
-                    span.textContent = value;
-                    span.style.display = 'block'; // Гарантируем, что текст занимает место
-                    span.style.textAlign = 'center'; // Выравнивание текста по центру
-                    input.parentElement.replaceChild(span, input);
+                    input.style.border = "none"; // Убираем границу
+                    input.style.outline = "none"; // Убираем контур
+                    input.style.textAlign = "center"; // Центрируем текст
                 });
-    
-                // Используем html2canvas для рендеринга содержимого editorSpace
+
+                // Рендеринг содержимого editorSpace в PDF
                 html2canvas(editorSpace, { scale: 2 }).then(canvas => {
                     const imgData = canvas.toDataURL('image/png');
                     const pdf = new jsPDF('p', 'mm', 'a4');
-    
+
                     // Масштабируем содержимое под A4
                     const pdfWidth = pdf.internal.pageSize.getWidth();
                     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-    
+
                     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
                     pdf.save('Анализ_крови.pdf');
+
+                    // Восстанавливаем границы input после сохранения
+                    inputs.forEach(input => {
+                        input.style.borderBottom = "1px solid red"; // Вернуть границу после сохранения
+                    });
                 });
             });
     
